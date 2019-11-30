@@ -1,3 +1,3 @@
-# ![defont](https://deidee.com/logo?str=deFont)
+# ![defont](https://deidee.com/logo.png?str=deFont)
 
 Huisstijlletter van deidee.
