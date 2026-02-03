@@ -2,80 +2,111 @@
 # -*- coding: utf-8 -*-
 
 """
-tools/generate-defont.py
+tools/generate-fonts.py
 
 Generates:
   - dist/fonts/defont.ttf
   - dist/fonts/defont.woff
   - dist/fonts/defont.woff2
 
-Design:
-  - 9-row bitmap glyphs from data/chars.php (same mapping your PHP uses)
-  - each '1' pixel becomes a rectangle
-  - COLR/CPAL color font layers using a "deJade" palette (RGBA with ~0.5 alpha)
-  - monochrome fallback outlines are included in the base glyph shapes
+Key fix vs previous versions:
+  - Build CPAL + COLR *manually* (COLR v0) instead of using colorLib.builder,
+    because some fontTools builds produce broken COLR layer references in browsers
+    (symptom: glyphs render as single vertical bars).
 
-Requires:
-  - PHP available in PATH (to json_encode($c) from chars.php)
-  - Python packages: fonttools, brotli
+Deps:
+  pip install fonttools brotli
+  PHP must be available on PATH
+
+Usage:
+  python tools/generate-fonts.py
+  python tools/generate-fonts.py --debug
 """
-
-from __future__ import annotations
 
 import argparse
 import json
 import os
 import random
 import subprocess
-import sys
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Tuple, Any
+from typing import Any, Dict, List, Tuple
 
 from fontTools.fontBuilder import FontBuilder
 from fontTools.pens.ttGlyphPen import TTGlyphPen
+from fontTools.ttLib import TTFont, newTable
 
-# Color font builders
-from fontTools.colorLib.builder import buildCOLR, buildCPAL  # type: ignore
-from fontTools.colorLib.errors import ColorLibError
+# Manual COLR/CPAL table classes
+from fontTools.ttLib.tables.C_O_L_R_ import LayerRecord  # type: ignore
+from fontTools.ttLib.tables.C_P_A_L_ import Color  # type: ignore
 
-ROWS = 9  # matches your PHP: const ROWS = 9
+
+ROWS = 9  # bitmap height in chars.php
 
 
 @dataclass(frozen=True)
 class Metrics:
     upm: int = 1000
     ascent: int = 900
-    descent: int = -100  # hhea descender is negative
-    # Layout in font units: we emulate "HEIGHT_MULTIPLIER = 11" as 11 "cells"
-    cell: int = 90  # 11 * 90 = 990 ~= fits within 1000; leaves a tiny safety margin
-    left_pad_cells: int = 1
-    right_pad_cells: int = 1
-    letterspacing_cells: int = 0  # extra spacing beyond right pad (optional)
+    descent: int = -100
+
+    cell: int = 85  # font units per bitmap cell
+
+    left_pad: int = 1
+    right_pad: int = 1
+    bottom_pad: int = 1
+    top_pad: int = 1
+
+    letterspacing: int = 0
+
+
+def glyph_name_for_codepoint(cp: int) -> str:
+    if cp == 32:
+        return "space"
+    if cp <= 0xFFFF:
+        return f"uni{cp:04X}"
+    return f"u{cp:06X}"
+
+
+def rect_to_pen(pen: TTGlyphPen, x0: int, y0: int, x1: int, y1: int) -> None:
+    pen.moveTo((x0, y0))
+    pen.lineTo((x1, y0))
+    pen.lineTo((x1, y1))
+    pen.lineTo((x0, y1))
+    pen.closePath()
+
+
+def de_jade(rng: random.Random) -> Tuple[int, int, int, int]:
+    # Matches PHP deJade(): r=[0..127], g=[127..255], b=[0..191], a=0.5
+    r = rng.randint(0, 127)
+    g = rng.randint(127, 255)
+    b = rng.randint(0, 191)
+    a = 128
+    return (r, g, b, a)
+
+
+def find_project_chars(default_rel: str = "data/chars.php") -> Path:
+    here = Path(__file__).resolve()
+    for parent in [here.parent] + list(here.parents):
+        cand = parent / default_rel
+        if cand.exists():
+            return cand
+    return Path(default_rel)
+
 
 def run_php_chars_to_json(chars_php: Path, debug: bool = False) -> Dict[int, List[int]]:
     """
-    Loads $c from the PHP file and returns {codepoint: [0/1, ...]}.
-
-    Robust against:
-      - mixed-key PHP arrays ($c['.notdef'] + $c[0x41])
-      - PHP warnings/notices printed before JSON (e.g. Imagick/ImageMagick mismatch)
-
-    Strategy:
-      - run PHP with display_errors=0 / error_reporting=0 (best effort)
-      - do NOT merge stderr into stdout
-      - parse JSON from the first '{' ... last '}' slice of output if needed
-      - ignore non-numeric keys like ".notdef"
+    Loads $c from chars.php and returns {codepoint: [0/1, ...]}.
+    Robust against PHP warnings printed before JSON.
     """
-    chars_php = Path(chars_php)
+    chars_php = Path(chars_php).resolve()
     if not chars_php.exists():
         raise FileNotFoundError(f"chars.php not found: {chars_php}")
 
     php = "php.exe" if os.name == "nt" else "php"
 
     php_code = (
-        # Best-effort suppression (may not stop extension init warnings on some setups)
         "ini_set('display_errors','0');"
         "ini_set('html_errors','0');"
         "error_reporting(0);"
@@ -91,23 +122,11 @@ def run_php_chars_to_json(chars_php: Path, debug: bool = False) -> Dict[int, Lis
         "-r", php_code,
     ]
 
-    # Capture stdout and stderr separately so stderr warnings won't poison JSON
-    try:
-        res = subprocess.run(cmd, capture_output=True, text=True, check=False)
-    except FileNotFoundError as e:
-        raise RuntimeError("PHP executable not found. Ensure `php` is in your PATH.") from e
-
+    res = subprocess.run(cmd, capture_output=True, text=True, check=False)
     stdout = res.stdout or ""
     stderr = res.stderr or ""
 
-    # Prefer stdout, but if JSON ended up on stderr somehow, consider that too.
-    combined_for_fallback = stdout if stdout.strip() else (stderr if stderr.strip() else (stdout + stderr))
-
     def extract_json_blob(s: str) -> str:
-        """
-        Returns the substring from the first '{' to the last '}' (inclusive).
-        This strips any PHP warnings/noise that may precede or follow the JSON.
-        """
         start = s.find("{")
         end = s.rfind("}")
         if start == -1 or end == -1 or end <= start:
@@ -119,23 +138,11 @@ def run_php_chars_to_json(chars_php: Path, debug: bool = False) -> Dict[int, Lis
             )
         return s[start : end + 1]
 
-    # First try: parse stdout directly (ideal case)
-    raw: Any
     try:
-        raw = json.loads(stdout)
+        raw: Any = json.loads(stdout)
     except Exception:
-        # Second try: strip warnings/junk and parse extracted JSON region
-        json_blob = extract_json_blob(combined_for_fallback)
-        try:
-            raw = json.loads(json_blob)
-        except json.JSONDecodeError as e:
-            raise RuntimeError(
-                "Could not decode JSON from PHP even after stripping warnings.\n"
-                f"Exit code: {res.returncode}\n"
-                f"Extracted JSON (first 800 chars):\n{json_blob[:800]}\n\n"
-                f"STDOUT (first 800 chars):\n{stdout[:800]}\n\n"
-                f"STDERR (first 800 chars):\n{stderr[:800]}"
-            ) from e
+        blob = extract_json_blob(stdout if stdout.strip() else (stdout + "\n" + stderr))
+        raw = json.loads(blob)
 
     if not isinstance(raw, dict):
         raise TypeError(f"Expected JSON object from PHP, got: {type(raw)}")
@@ -145,21 +152,17 @@ def run_php_chars_to_json(chars_php: Path, debug: bool = False) -> Dict[int, Lis
 
     for k, v in raw.items():
         ks = str(k)
-        # Don't even call int() unless it's strictly numeric (skips ".notdef")
         if not ks.isdigit():
             if debug:
                 skipped.append(ks)
             continue
-
         cp = int(ks)
-
         if v is None:
             pixels: List[int] = []
         elif isinstance(v, list):
             pixels = [int(x) for x in v]
         else:
             raise TypeError(f"Unexpected value type for key {ks} (cp={cp}): {type(v)}")
-
         cmap[cp] = pixels
 
     if debug:
@@ -172,48 +175,40 @@ def run_php_chars_to_json(chars_php: Path, debug: bool = False) -> Dict[int, Lis
     return cmap
 
 
+def attach_cpal_manual(font: TTFont, palette_rgba: List[Tuple[int, int, int, int]]) -> None:
+    """
+    CPAL uses BGRA order internally (Color(blue, green, red, alpha)).
+    """
+    cpal = newTable("CPAL")
+    cpal.version = 0
+    cpal.numPaletteEntries = len(palette_rgba)
+
+    # one palette
+    cpal.palettes = [[Color(b, g, r, a) for (r, g, b, a) in palette_rgba]]
+
+    # optional metadata arrays (safe defaults)
+    try:
+        default_type = getattr(cpal, "DEFAULT_PALETTE_TYPE", 0)
+        cpal.paletteTypes = [default_type]
+    except Exception:
+        cpal.paletteTypes = [0]
+    cpal.paletteLabels = []
+    cpal.paletteEntryLabels = []
+
+    font["CPAL"] = cpal
 
 
-def glyph_name_for_codepoint(cp: int) -> str:
-    if cp == 32:
-        return "space"
-    if cp <= 0xFFFF:
-        return f"uni{cp:04X}"
-    return f"u{cp:06X}"
+def attach_colr_manual(font: TTFont, color_layers: Dict[str, List[Tuple[str, int]]]) -> None:
+    """
+    Build COLR v0 manually: base glyph -> list of LayerRecord(name, colorID).
+    """
+    colr = newTable("COLR")
+    colr.version = 0
+    colr.ColorLayers = {}
+    for base_glyph, layers in color_layers.items():
+        colr.ColorLayers[base_glyph] = [LayerRecord(name=gn, colorID=int(pi)) for (gn, pi) in layers]
+    font["COLR"] = colr
 
-
-def de_jade(rng: random.Random) -> Tuple[int, int, int, int]:
-    # PHP:
-    #   r = mt_rand(0,127)
-    #   g = mt_rand(127,255)
-    #   b = mt_rand(0,191)
-    #   a = .5
-    r = rng.randint(0, 127)
-    g = rng.randint(127, 255)
-    b = rng.randint(0, 191)
-    a = 128  # 0.5 alpha
-    return (r, g, b, a)
-
-
-def rect_to_pen(pen: TTGlyphPen, x0: int, y0: int, x1: int, y1: int) -> None:
-    # A simple rectangle contour. All points on-curve is fine for glyf.
-    pen.moveTo((x0, y0))
-    pen.lineTo((x1, y0))
-    pen.lineTo((x1, y1))
-    pen.lineTo((x0, y1))
-    pen.closePath()
-
-def palette_rgba255_to_unit(pal):
-    """Convert [(R,G,B,A) 0..255] -> [(r,g,b,a) 0..1]."""
-    out = []
-    for c in pal:
-        if len(c) == 3:
-            r, g, b = c
-            a = 255
-        else:
-            r, g, b, a = c
-        out.append((r / 255.0, g / 255.0, b / 255.0, a / 255.0))
-    return out
 
 def build_font(
     chars: Dict[int, List[int]],
@@ -224,173 +219,152 @@ def build_font(
     seed: int,
     jitter_px_max: int,
     metrics: Metrics,
+    debug: bool = False,
 ) -> None:
     rng = random.Random(seed)
-
+    out_base = Path(out_base)
     out_base.parent.mkdir(parents=True, exist_ok=True)
 
-    # Filter/validate glyph data
-    # Keep only codepoints whose pixel arrays are either empty (space) or divisible by ROWS.
+    # Filter glyphs: allow empty or divisible by ROWS
     filtered: Dict[int, List[int]] = {}
     for cp, pixels in chars.items():
-        if pixels is None:
-            pixels = []
+        pixels = pixels or []
         if len(pixels) == 0:
             filtered[cp] = []
-            continue
-        if len(pixels) % ROWS != 0:
-            # Skip invalid entries rather than exploding; you can tighten this if you prefer.
-            continue
-        filtered[cp] = pixels
+        elif len(pixels) % ROWS == 0:
+            filtered[cp] = pixels
+        else:
+            if debug:
+                print(f"[warn] skipping {hex(cp)}: len={len(pixels)} not divisible by ROWS={ROWS}")
 
-    # Compute total "ones" across all glyphs (for palette sizing like PHP does).
+    # Palette size like PHP: ones + 1
     total_ones = sum(sum(p) for p in filtered.values())
-    # PHP uses for($i=0; $i <= $ones; $i++), i.e. ones+1 entries
     palette_size = total_ones + 1
-
-    # Build palette
     palette: List[Tuple[int, int, int, int]] = [de_jade(rng) for _ in range(palette_size)]
 
-    # October special (mimic your PHP behavior)
-    now = datetime.now()
-    if now.month == 10 and palette:
+    # October special like PHP
+    if datetime.now().month == 10 and palette:
         palette[0] = (255, 68, 136, 128)
         rng.shuffle(palette)
 
-    # We'll assign palette indices sequentially per "on" pixel, across the whole font build.
-    next_palette_index = 0
-
     glyph_order: List[str] = [".notdef", "space"]
-    glyphs = {}
+    glyphs: Dict[str, Any] = {}
     advance_widths: Dict[str, int] = {}
-    left_side_bearings: Dict[str, int] = {}
-
-    # COLR layer mapping: baseGlyphName -> list[(layerGlyphName, paletteIndex)]
+    left_sidebearings: Dict[str, int] = {}
     color_layers: Dict[str, List[Tuple[str, int]]] = {}
 
-    # .notdef glyph (simple box)
+    cell = metrics.cell
+
+    def aw_for_cols(cols: int) -> int:
+        return int((metrics.left_pad + cols + metrics.right_pad + metrics.letterspacing) * cell)
+
+    # .notdef
     pen_notdef = TTGlyphPen(None)
-    # A visible notdef rectangle
-    rect_to_pen(pen_notdef, 80, 80, 920, 920)
+    rect_to_pen(pen_notdef, 80, 80, metrics.upm - 80, metrics.upm - 80)
     glyphs[".notdef"] = pen_notdef.glyph()
     advance_widths[".notdef"] = metrics.upm
-    left_side_bearings[".notdef"] = 0
+    left_sidebearings[".notdef"] = 0
 
-    # space glyph (empty)
+    # space
     pen_space = TTGlyphPen(None)
     glyphs["space"] = pen_space.glyph()
-    advance_widths["space"] = 2 * metrics.cell
-    left_side_bearings["space"] = 0
+    advance_widths["space"] = aw_for_cols(1)
+    left_sidebearings["space"] = 0
 
-    # Sort by codepoint for stable output
+    next_color_index = 0
+
+    # Build glyphs + per-pixel layer glyphs
     for cp in sorted(filtered.keys()):
         if cp == 32:
-            # already have "space" glyph; still map cmap to it later
             continue
 
         pixels = filtered[cp]
         gname = glyph_name_for_codepoint(cp)
+
         if gname not in glyph_order:
             glyph_order.append(gname)
 
-        # Determine columns & advance width
-        if len(pixels) == 0:
-            cols = 0
-        else:
-            cols = len(pixels) // ROWS
+        cols = 1 if not pixels else (len(pixels) // ROWS)
 
-        aw = (metrics.left_pad_cells + cols + metrics.right_pad_cells + metrics.letterspacing_cells) * metrics.cell
-        if aw <= 0:
-            aw = 2 * metrics.cell
+        if debug and cp in (0x30, 0x40, 0x41, 0x45, 0x4D, 0x61):
+            print(f"[debug] {hex(cp)} len(pixels)={len(pixels)} cols={cols}")
 
+        aw = aw_for_cols(cols)
         advance_widths[gname] = aw
-        left_side_bearings[gname] = 0
+        left_sidebearings[gname] = 0
 
-        # Base glyph pen (monochrome fallback outlines)
         base_pen = TTGlyphPen(None)
-
         layers_for_glyph: List[Tuple[str, int]] = []
 
-        if cols > 0:
-            # Iterate pixels in row-major order: index -> (row, col)
-            for i, bit in enumerate(pixels):
-                if bit != 1:
+        if pixels:
+            for idx, bit in enumerate(pixels):
+                if int(bit) != 1:
                     continue
 
-                row = i // cols  # 0..ROWS-1, top->bottom in your PHP
-                col = i % cols
+                # Row-major mapping (same as your PHP logic)
+                row = idx // cols  # 0..ROWS-1 top->bottom in bitmap
+                col = idx % cols
 
-                # Map to font coords:
-                # - x starts after a left pad cell
-                x = (metrics.left_pad_cells + col) * metrics.cell
+                x0 = int((metrics.left_pad + col) * cell)
+                y0 = int((metrics.bottom_pad + (ROWS - 1 - row)) * cell)
 
-                # y_top mimics SVG top-left anchoring, then rect extends "down"
-                # Top of row r:
-                y_top = (ROWS - row) * metrics.cell  # r=0 -> 9*cell, r=8 -> 1*cell
-                # Base rect size:
-                w = metrics.cell
-                h = metrics.cell
-
-                # Jitter: PHP adds 0..3 pixels to width/height where size=24.
-                # We scale that to font units.
+                w = cell
+                h = cell
                 if jitter_px_max > 0:
                     j = rng.randint(0, jitter_px_max)
-                    extra = int(round(metrics.cell * (j / 24.0)))
+                    extra = int(round(cell * (j / 24.0)))
                     w += extra
                     h += extra
 
-                x0 = int(x)
-                x1 = int(x + w)
-                y1 = int(y_top)
-                y0 = int(y_top - h)
+                x1 = x0 + int(w)
+                y1 = y0 + int(h)
 
-                # Add to base outline
+                # base outline (fallback)
                 rect_to_pen(base_pen, x0, y0, x1, y1)
 
-                # Create a layer glyph containing just this rectangle
-                layer_name = f"{gname}.p{next_palette_index}"
+                # layer glyph (one rect, one palette index)
+                color_index = next_color_index
+                next_color_index += 1
+                if color_index >= palette_size:
+                    color_index = palette_size - 1
+
+                layer_name = f"{gname}.c{color_index}"
                 glyph_order.append(layer_name)
 
-                layer_pen = TTGlyphPen(None)
-                rect_to_pen(layer_pen, x0, y0, x1, y1)
-                glyphs[layer_name] = layer_pen.glyph()
-
+                lp = TTGlyphPen(None)
+                rect_to_pen(lp, x0, y0, x1, y1)
+                glyphs[layer_name] = lp.glyph()
                 advance_widths[layer_name] = aw
-                left_side_bearings[layer_name] = 0
+                left_sidebearings[layer_name] = 0
 
-                # Assign a unique palette index per pixel (like sequential palette[$one])
-                pal_index = next_palette_index
-                layers_for_glyph.append((layer_name, pal_index))
-
-                next_palette_index += 1
-                # Safety: don't exceed palette; keep it predictable if something is off
-                if next_palette_index >= palette_size:
-                    next_palette_index = palette_size - 1
+                layers_for_glyph.append((layer_name, color_index))
 
         glyphs[gname] = base_pen.glyph()
         if layers_for_glyph:
             color_layers[gname] = layers_for_glyph
 
-    # Build cmap (character map) for base glyphs
+    # cmap (base glyphs only)
     cmap: Dict[int, str] = {}
     for cp in sorted(filtered.keys()):
-        cmap[cp] = "space" if cp == 32 else glyph_name_for_codepoint(cp)
+        if cp == 32:
+            cmap[cp] = "space"
+        else:
+            cmap[cp] = glyph_name_for_codepoint(cp)
 
-    # FontBuilder
     fb = FontBuilder(metrics.upm, isTTF=True)
     fb.setupGlyphOrder(glyph_order)
 
-    # Horizontal metrics
+    # hmtx for all glyphs
     hmtx = {}
     for gn in glyph_order:
-        aw = advance_widths.get(gn, 2 * metrics.cell)
-        lsb = left_side_bearings.get(gn, 0)
-        hmtx[gn] = (int(aw), int(lsb))
+        hmtx[gn] = (int(advance_widths.get(gn, aw_for_cols(3))), int(left_sidebearings.get(gn, 0)))
     fb.setupHorizontalMetrics(hmtx)
 
-    # Tables
     fb.setupCharacterMap(cmap)
     fb.setupGlyf(glyphs)
+
+    fb.setupHead()
+    fb.setupMaxp()
     fb.setupHorizontalHeader(ascent=metrics.ascent, descent=metrics.descent)
     fb.setupOS2(
         sTypoAscender=metrics.ascent,
@@ -409,52 +383,52 @@ def build_font(
             "version": "Version 1.000",
             "manufacturer": vendor_id,
             "designer": vendor_id,
-            "vendorURL": "https://deidee.nl/",
         }
     )
-    fb.setupPost()
+    fb.setupPost(keepGlyphNames=True)
 
-    # --- Build color tables (COLR/CPAL) ---
-
-    # --- Build CPAL ---
-    try:
-        # Some fontTools variants support this style (font passed in)
-        buildCPAL(fb.font, palettes=[palette])
-    except TypeError:
-        # Other variants return the CPAL table; assign it manually.
+    # Recalc bounds for all glyphs (helps some toolchains)
+    glyf = fb.font["glyf"]
+    for gn in fb.font.getGlyphOrder():
         try:
-            fb.font["CPAL"] = buildCPAL([palette])
-        except ColorLibError:
-            # This fontTools expects colors in 0..1 floats, not 0..255 ints.
-            fb.font["CPAL"] = buildCPAL([palette_rgba255_to_unit(palette)])
-
-    # COLR: mapping baseGlyphName -> [(layerGlyphName, paletteIndex), ...]
+            glyf[gn].recalcBounds(glyf)
+        except Exception:
+            pass
+    # Tell fontTools to recalc head bbox on save (in many versions this is a bool flag)
     try:
-        buildCOLR(fb.font, colorLayers=color_layers)
-    except TypeError:
-        # Older/alternate style: buildCOLR(colorLayers) -> COLR table
-        fb.font["COLR"] = buildCOLR(color_layers)
+        fb.font.recalcBBoxes = True
+    except Exception:
+        pass
 
+    # Attach color tables MANUALLY (the main fix)
+    attach_cpal_manual(fb.font, palette)
+    attach_colr_manual(fb.font, color_layers)
 
     # Save TTF
     ttf_path = out_base.with_suffix(".ttf")
     fb.save(ttf_path)
 
-    # Save WOFF + WOFF2
-    from fontTools.ttLib import TTFont
+    # Debug sanity: confirm COLR v0 + layer counts + some bboxes
+    if debug:
+        t = TTFont(ttf_path)
+        print(f"[colr] version={t['COLR'].version} layers(A)={len(t['COLR'].ColorLayers.get('uni0041', []))}")
+        for cp in (0x41, 0x40, 0x4D):
+            gn = glyph_name_for_codepoint(cp)
+            g = t["glyf"][gn]
+            g.recalcBounds(t["glyf"])
+            print(f"[bbox] {hex(cp)} {gn}: xMin={g.xMin} xMax={g.xMax} yMin={g.yMin} yMax={g.yMax}")
 
-    font = TTFont(ttf_path)
-
-    # WOFF
+    # Save WOFF/WOFF2 using fresh TTFont objects
     woff_path = out_base.with_suffix(".woff")
-    font.flavor = "woff"
-    font.save(woff_path)
+    f1 = TTFont(ttf_path)
+    f1.flavor = "woff"
+    f1.save(woff_path)
 
-    # WOFF2
     woff2_path = out_base.with_suffix(".woff2")
-    font.flavor = "woff2"
+    f2 = TTFont(ttf_path)
+    f2.flavor = "woff2"
     try:
-        font.save(woff2_path)
+        f2.save(woff2_path)
     except Exception as e:
         raise RuntimeError(
             "WOFF2 save failed. You likely need `brotli` installed.\n"
@@ -462,60 +436,39 @@ def build_font(
             f"Original error: {e}"
         ) from e
 
-    # Reset flavor (good hygiene)
-    font.flavor = None
-
     print("Wrote:")
     print(f"  {ttf_path}")
     print(f"  {woff_path}")
     print(f"  {woff2_path}")
 
 
-def find_project_chars(default_rel: str = "data/chars.php") -> Path:
-    """
-    Tries to locate data/chars.php by searching upward from this script.
-    """
-    here = Path(__file__).resolve()
-    for parent in [here.parent] + list(here.parents):
-        candidate = parent / default_rel
-        if candidate.exists():
-            return candidate
-    # fallback to cwd
-    candidate = Path.cwd() / default_rel
-    return candidate
-
-
 def main() -> None:
-    ap = argparse.ArgumentParser(description="Generate defont (TTF/WOFF/WOFF2) from data/chars.php.")
+    ap = argparse.ArgumentParser(description="Generate defont (TTF/WOFF/WOFF2) from data/chars.php")
     ap.add_argument("--chars", type=str, default=str(find_project_chars()), help="Path to data/chars.php")
-    ap.add_argument("--out", type=str, default="dist/fonts/defont", help="Output base path without extension")
+    ap.add_argument("--out", type=str, default="dist/fonts/defont", help="Output base path (no extension)")
     ap.add_argument("--family", type=str, default="defont", help="Font family name")
     ap.add_argument("--style", type=str, default="Regular", help="Font style name")
     ap.add_argument("--vendor", type=str, default="deidee", help="Vendor/manufacturer string")
-    ap.add_argument("--seed", type=int, default=0, help="Random seed (0 = derive from date)")
-    ap.add_argument("--jitter", type=int, default=3, help="Max jitter in 'PHP pixels' (0..3 recommended)")
+    ap.add_argument("--seed", type=int, default=0, help="Random seed (0 => YYYYMMDD)")
+    ap.add_argument("--jitter", type=int, default=3, help="Max jitter like PHP (0..3 recommended)")
+    ap.add_argument("--debug", action="store_true", help="Print debug info")
     args = ap.parse_args()
 
-    chars_php = Path(args.chars).resolve()
-    out_base = Path(args.out).resolve()
-
-    # Deterministic-ish default seed (like "today's brand output")
     if args.seed == 0:
-        # YYYYMMDD integer
         args.seed = int(datetime.now().strftime("%Y%m%d"))
 
-    chars = run_php_chars_to_json(chars_php)
+    chars = run_php_chars_to_json(Path(args.chars), debug=args.debug)
 
-    metrics = Metrics()
     build_font(
         chars=chars,
-        out_base=out_base,
+        out_base=Path(args.out),
         family_name=args.family,
         style_name=args.style,
         vendor_id=args.vendor,
         seed=args.seed,
         jitter_px_max=max(0, int(args.jitter)),
-        metrics=metrics,
+        metrics=Metrics(),
+        debug=args.debug,
     )
 
 
