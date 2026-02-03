@@ -1,0 +1,16 @@
+{
+  "name": "deidee/defont",
+  "type": "project",
+  "license": "proprietary",
+  "authors": [
+    {
+      "name": "ACJ",
+      "email": "gitlab@acjs.net"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "deidee\\": "src/"
+    }
+  }
+}
