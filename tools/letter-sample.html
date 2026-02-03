@@ -1,0 +1,647 @@
+<!-- tools/letter-sample.html -->
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>defont — letter sample</title>
+
+    <style>
+        :root{
+            --bg: #0f1115;
+            --panel: #151823;
+            --panel2: #10131c;
+            --text: #e8ecf2;
+            --muted: #aab3c0;
+            --border: rgba(255,255,255,.12);
+            --accent: #7dd3fc;
+            --shadow: 0 10px 30px rgba(0,0,0,.35);
+            --radius: 14px;
+        }
+        [data-theme="light"]{
+            --bg: #f6f7fb;
+            --panel: #ffffff;
+            --panel2: #f3f5fa;
+            --text: #151823;
+            --muted: #5b6473;
+            --border: rgba(0,0,0,.10);
+            --accent: #0369a1;
+            --shadow: 0 12px 30px rgba(0,0,0,.08);
+        }
+
+        *{ box-sizing:border-box; }
+        body{
+            margin:0;
+            font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        header{
+            padding: 22px 18px 10px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1{
+            font-size: 18px;
+            margin: 0 0 6px;
+            letter-spacing: .2px;
+            font-weight: 650;
+        }
+        .sub{
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.4;
+            margin: 0;
+        }
+
+        .wrap{
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 12px 18px 26px;
+            display: grid;
+            gap: 14px;
+            grid-template-columns: 380px 1fr;
+        }
+        @media (max-width: 980px){
+            .wrap{ grid-template-columns: 1fr; }
+        }
+
+        .card{
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+        .card h2{
+            font-size: 13px;
+            margin: 0;
+            padding: 12px 14px;
+            background: linear-gradient(180deg, var(--panel2), transparent);
+            border-bottom: 1px solid var(--border);
+            letter-spacing: .2px;
+        }
+        .content{
+            padding: 12px 14px 14px;
+        }
+
+        label{
+            display:block;
+            font-size: 12px;
+            color: var(--muted);
+            margin: 10px 0 6px;
+        }
+        textarea{
+            width:100%;
+            min-height: 110px;
+            resize: vertical;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: var(--panel2);
+            color: var(--text);
+            padding: 10px 12px;
+            outline: none;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            font-size: 12px;
+            line-height: 1.35;
+        }
+
+        .row{
+            display:flex;
+            gap:10px;
+            align-items:center;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+        .row .left{
+            display:flex;
+            gap:10px;
+            align-items:center;
+            flex-wrap: wrap;
+        }
+
+        .btn{
+            border: 1px solid var(--border);
+            background: var(--panel2);
+            color: var(--text);
+            padding: 8px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            cursor: pointer;
+            user-select: none;
+        }
+        .btn:hover{ border-color: rgba(125, 211, 252, .5); }
+        .btn.primary{
+            border-color: rgba(125, 211, 252, .5);
+            box-shadow: 0 0 0 2px rgba(125, 211, 252, .12);
+        }
+        .tog{
+            display:flex;
+            align-items:center;
+            gap:8px;
+            font-size: 12px;
+            color: var(--muted);
+            margin-top: 10px;
+            user-select: none;
+        }
+        .tog input{ transform: translateY(1px); }
+
+        .slider{
+            display:grid;
+            grid-template-columns: 1fr 64px;
+            gap:10px;
+            align-items:center;
+            margin-top: 10px;
+        }
+        input[type="range"]{ width: 100%; }
+        .pill{
+            display:inline-flex;
+            justify-content:center;
+            align-items:center;
+            padding: 6px 8px;
+            border-radius: 10px;
+            background: var(--panel2);
+            border: 1px solid var(--border);
+            font-size: 12px;
+            color: var(--text);
+            min-width: 56px;
+        }
+
+        .preview{
+            position: relative;
+            min-height: 360px;
+        }
+
+        /* font face: tools/letter-sample.html => ../dist/fonts/defont.* */
+        @font-face{
+            font-family: "defont";
+            src:
+                    url("../dist/fonts/defont.woff2") format("woff2"),
+                    url("../dist/fonts/defont.woff") format("woff"),
+                    url("../dist/fonts/defont.ttf") format("truetype");
+            font-style: normal;
+            font-weight: 400;
+            font-display: swap;
+        }
+
+        .stage{
+            padding: 18px 18px 22px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stage.grid::before{
+            content:"";
+            position:absolute;
+            inset:0;
+            pointer-events:none;
+            background-image:
+                    linear-gradient(to right, rgba(255,255,255,.08) 1px, transparent 1px),
+                    linear-gradient(to bottom, rgba(255,255,255,.08) 1px, transparent 1px);
+            background-size: 24px 24px;
+            opacity: .35;
+            mix-blend-mode: overlay;
+        }
+        [data-theme="light"] .stage.grid::before{
+            background-image:
+                    linear-gradient(to right, rgba(0,0,0,.07) 1px, transparent 1px),
+                    linear-gradient(to bottom, rgba(0,0,0,.07) 1px, transparent 1px);
+            opacity: .5;
+            mix-blend-mode: multiply;
+        }
+
+        .sample{
+            position: relative;
+            z-index: 1;
+            white-space: pre-wrap;
+            word-break: break-word;
+            font-family: "defont", system-ui, sans-serif;
+            font-kerning: normal;
+            text-rendering: geometricPrecision;
+        }
+        .meta{
+            margin-top: 10px;
+            font-size: 12px;
+            color: var(--muted);
+            display:flex;
+            gap:10px;
+            flex-wrap: wrap;
+            align-items:center;
+        }
+        .badge{
+            display:inline-flex;
+            gap:8px;
+            align-items:center;
+            padding: 6px 10px;
+            background: var(--panel2);
+            border: 1px solid var(--border);
+            border-radius: 999px;
+        }
+        .dot{
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(255,255,255,.35);
+        }
+        .dot.ok{ background: #22c55e; }
+        .dot.warn{ background: #f59e0b; }
+
+        .glyphs{
+            display:none;
+            border-top: 1px solid var(--border);
+            background: var(--panel);
+        }
+        .glyphs.open{ display:block; }
+
+        .glyphbar{
+            padding: 10px 14px;
+            display:flex;
+            gap:10px;
+            align-items:center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border);
+            background: linear-gradient(180deg, var(--panel2), transparent);
+        }
+        .glyphbar .hint{
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .gridwrap{
+            padding: 12px 14px 16px;
+            display:grid;
+            grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
+            gap: 10px;
+        }
+
+        .gcell{
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: var(--panel2);
+            padding: 10px 10px 8px;
+            cursor: pointer;
+            user-select: none;
+            min-height: 86px;
+            display:flex;
+            flex-direction: column;
+            gap: 8px;
+            justify-content: space-between;
+        }
+        .gcell:hover{ border-color: rgba(125, 211, 252, .55); }
+        .gchar{
+            font-family: "defont", system-ui, sans-serif;
+            font-size: 34px;
+            line-height: 1;
+        }
+        .ginfo{
+            font-size: 11px;
+            color: var(--muted);
+            display:flex;
+            justify-content: space-between;
+            gap: 8px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .mono{ font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+
+        .toast{
+            position: fixed;
+            left: 50%;
+            bottom: 14px;
+            transform: translateX(-50%);
+            background: rgba(20, 24, 35, .92);
+            color: #fff;
+            border: 1px solid rgba(255,255,255,.12);
+            border-radius: 999px;
+            padding: 10px 14px;
+            font-size: 12px;
+            box-shadow: 0 12px 30px rgba(0,0,0,.35);
+            opacity: 0;
+            pointer-events:none;
+            transition: opacity .15s ease;
+        }
+        [data-theme="light"] .toast{
+            background: rgba(20, 24, 35, .92);
+            border-color: rgba(255,255,255,.18);
+        }
+        .toast.show{ opacity: 1; }
+    </style>
+</head>
+
+<body data-theme="dark">
+<header>
+    <h1>defont — interactive letter sample</h1>
+    <p class="sub">
+        Loads <span class="mono">../dist/fonts/defont.woff2</span> (fallback to WOFF/TTF). Adjust spacing + size, and click glyphs to insert.
+    </p>
+</header>
+
+<div class="wrap">
+    <!-- Controls -->
+    <section class="card">
+        <h2>Controls</h2>
+        <div class="content">
+            <label for="text">Sample text</label>
+            <textarea id="text" spellcheck="false"></textarea>
+
+            <div class="row">
+                <div class="left">
+                    <button class="btn primary" id="apply">Apply</button>
+                    <button class="btn" id="reset">Reset</button>
+                    <button class="btn" id="toggleGlyphs">Glyph table</button>
+                </div>
+                <button class="btn" id="toggleTheme">Theme</button>
+            </div>
+
+            <div class="slider">
+                <div>
+                    <label for="size">Font size</label>
+                    <input id="size" type="range" min="16" max="220" step="1" value="96" />
+                </div>
+                <div class="pill"><span id="sizeVal"></span>px</div>
+            </div>
+
+            <div class="slider">
+                <div>
+                    <label for="ls">Letter spacing</label>
+                    <input id="ls" type="range" min="-6" max="40" step="0.5" value="2" />
+                </div>
+                <div class="pill"><span id="lsVal"></span>px</div>
+            </div>
+
+            <div class="slider">
+                <div>
+                    <label for="lh">Line height</label>
+                    <input id="lh" type="range" min="0.7" max="2.4" step="0.05" value="1.05" />
+                </div>
+                <div class="pill"><span id="lhVal"></span></div>
+            </div>
+
+            <div class="slider">
+                <div>
+                    <label for="pad">Stage padding</label>
+                    <input id="pad" type="range" min="6" max="64" step="1" value="18" />
+                </div>
+                <div class="pill"><span id="padVal"></span>px</div>
+            </div>
+
+            <label class="tog"><input id="grid" type="checkbox" /> Show grid</label>
+            <label class="tog"><input id="systemFallback" type="checkbox" /> Force system font (debug)</label>
+
+            <div class="meta" style="margin-top: 12px;">
+                <span class="badge"><span class="dot" id="fontDot"></span><span id="fontStatus">Checking font…</span></span>
+                <span class="badge"><span class="mono" id="charCount"></span> chars</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Preview -->
+    <section class="card preview">
+        <h2>Preview</h2>
+        <div class="stage" id="stage">
+            <div class="sample" id="sample"></div>
+            <div class="glyphs" id="glyphs">
+                <div class="glyphbar">
+                    <div class="hint">Click a glyph to append it to the sample text.</div>
+                    <button class="btn" id="copyAll">Copy sample</button>
+                </div>
+                <div class="gridwrap" id="glyphGrid"></div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+    // Characters present in your provided chars.php
+    // (If you add more later, just extend this list.)
+    const CODEPOINTS = [
+        0x20, 0x21, 0x27, 0x2B, 0x2C, 0x2D, 0x2E,
+        0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39,
+        0x3A, 0x3B, 0x3C, 0x3D, 0x3E, 0x3F,
+        0x40,
+        0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47, 0x48, 0x49, 0x4A, 0x4B, 0x4C, 0x4D, 0x4E, 0x4F,
+        0x50, 0x51, 0x52, 0x53, 0x54, 0x55, 0x56, 0x57, 0x58, 0x59, 0x5A,
+        0x5F,
+        0x61, 0x62, 0x63, 0x64, 0x65, 0x66, 0x67, 0x68, 0x69, 0x6A, 0x6B, 0x6C, 0x6D, 0x6E, 0x6F,
+        0x70, 0x71, 0x72, 0x73, 0x74, 0x75, 0x76, 0x77, 0x78, 0x79, 0x7A,
+        0xA9,
+        0x2019,
+        0x2709
+    ];
+
+    const NAMES = new Map([
+        [0x20, "space"],
+        [0x21, "!"], [0x27, "'"], [0x2B, "+"], [0x2C, ","], [0x2D, "-"], [0x2E, "."],
+        [0x3A, ":"], [0x3B, ";"], [0x3C, "<"], [0x3D, "="], [0x3E, ">"], [0x3F, "?"],
+        [0x40, "@"],
+        [0x5F, "_"],
+        [0xA9, "©"],
+        [0x2019, "’"],
+        [0x2709, "✉"]
+    ]);
+
+    const $ = (id) => document.getElementById(id);
+
+    const els = {
+        text: $("text"),
+        apply: $("apply"),
+        reset: $("reset"),
+        toggleGlyphs: $("toggleGlyphs"),
+        toggleTheme: $("toggleTheme"),
+        size: $("size"),
+        ls: $("ls"),
+        lh: $("lh"),
+        pad: $("pad"),
+        sizeVal: $("sizeVal"),
+        lsVal: $("lsVal"),
+        lhVal: $("lhVal"),
+        padVal: $("padVal"),
+        grid: $("grid"),
+        systemFallback: $("systemFallback"),
+        stage: $("stage"),
+        sample: $("sample"),
+        glyphs: $("glyphs"),
+        glyphGrid: $("glyphGrid"),
+        copyAll: $("copyAll"),
+        toast: $("toast"),
+        fontDot: $("fontDot"),
+        fontStatus: $("fontStatus"),
+        charCount: $("charCount"),
+    };
+
+    const DEFAULT_TEXT =
+        `deidee
+ABCDEFGHIJKLMNOPQRSTUVWXYZ
+abcdefghijklmnopqrstuvwxyz
+0123456789  @ _ + - = < > ? ! : ; , .
+© ’ ✉`;
+
+    function toChar(cp){
+        try { return String.fromCodePoint(cp); }
+        catch { return ""; }
+    }
+
+    function hex(cp){
+        return "U+" + cp.toString(16).toUpperCase().padStart(cp <= 0xFFFF ? 4 : 6, "0");
+    }
+
+    function showToast(msg){
+        els.toast.textContent = msg;
+        els.toast.classList.add("show");
+        window.clearTimeout(showToast._t);
+        showToast._t = window.setTimeout(() => els.toast.classList.remove("show"), 900);
+    }
+
+    function applyStyles(){
+        const size = parseFloat(els.size.value);
+        const ls = parseFloat(els.ls.value);
+        const lh = parseFloat(els.lh.value);
+        const pad = parseFloat(els.pad.value);
+
+        els.sizeVal.textContent = size.toFixed(0);
+        els.lsVal.textContent = ls.toFixed(1);
+        els.lhVal.textContent = lh.toFixed(2);
+        els.padVal.textContent = pad.toFixed(0);
+
+        els.stage.style.padding = pad + "px";
+
+        const useSystem = els.systemFallback.checked;
+        els.sample.style.fontFamily = useSystem ? "system-ui, sans-serif" : '"defont", system-ui, sans-serif';
+
+        els.sample.style.fontSize = size + "px";
+        els.sample.style.letterSpacing = ls + "px";
+        els.sample.style.lineHeight = lh;
+
+        els.stage.classList.toggle("grid", els.grid.checked);
+
+        // keep glyph preview in sync, too
+        els.glyphGrid.style.fontSize = Math.max(20, Math.min(48, size * 0.45)) + "px";
+    }
+
+    function applyText(){
+        const t = els.text.value ?? "";
+        els.sample.textContent = t;
+        els.charCount.textContent = String(t.length);
+    }
+
+    function buildGlyphGrid(){
+        els.glyphGrid.textContent = "";
+        for (const cp of CODEPOINTS){
+            const ch = toChar(cp);
+
+            const cell = document.createElement("div");
+            cell.className = "gcell";
+
+            const top = document.createElement("div");
+            top.className = "gchar";
+            top.textContent = ch === " " ? "␠" : ch; // visualize space
+
+            const info = document.createElement("div");
+            info.className = "ginfo";
+
+            const left = document.createElement("span");
+            left.className = "mono";
+            left.textContent = hex(cp);
+
+            const right = document.createElement("span");
+            right.textContent = NAMES.get(cp) || ch || "";
+
+            info.appendChild(left);
+            info.appendChild(right);
+            cell.appendChild(top);
+            cell.appendChild(info);
+
+            cell.addEventListener("click", () => {
+                const realCh = ch; // includes actual space
+                els.text.value = (els.text.value || "") + realCh;
+                applyText();
+                showToast(`Inserted ${hex(cp)}`);
+                els.text.focus();
+            });
+
+            els.glyphGrid.appendChild(cell);
+        }
+    }
+
+    async function checkFont(){
+        // This checks whether the browser thinks it can load "defont".
+        // If COLR/CPAL isn’t supported, the font may still load but render monochrome fallback shapes.
+        try{
+            const ok = await document.fonts.load('16px "defont"', "deidee");
+            const loaded = ok && ok.length > 0;
+            els.fontDot.classList.toggle("ok", loaded);
+            els.fontDot.classList.toggle("warn", !loaded);
+            els.fontStatus.textContent = loaded ? 'Font loaded ("defont")' : 'Font not loaded (check file paths)';
+        }catch{
+            els.fontDot.classList.add("warn");
+            els.fontStatus.textContent = "Font load check failed";
+        }
+    }
+
+    function toggleTheme(){
+        const theme = document.body.getAttribute("data-theme") === "light" ? "dark" : "light";
+        document.body.setAttribute("data-theme", theme);
+    }
+
+    function toggleGlyphs(){
+        els.glyphs.classList.toggle("open");
+        els.toggleGlyphs.classList.toggle("primary", els.glyphs.classList.contains("open"));
+    }
+
+    function resetAll(){
+        els.text.value = DEFAULT_TEXT;
+        els.size.value = 96;
+        els.ls.value = 2;
+        els.lh.value = 1.05;
+        els.pad.value = 18;
+        els.grid.checked = false;
+        els.systemFallback.checked = false;
+        applyText();
+        applyStyles();
+        showToast("Reset");
+    }
+
+    async function copySample(){
+        const txt = els.text.value || "";
+        try{
+            await navigator.clipboard.writeText(txt);
+            showToast("Copied sample text");
+        }catch{
+            // fallback
+            const ta = document.createElement("textarea");
+            ta.value = txt;
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand("copy");
+            document.body.removeChild(ta);
+            showToast("Copied sample text");
+        }
+    }
+
+    // Wire up UI
+    els.apply.addEventListener("click", () => { applyText(); applyStyles(); });
+    els.reset.addEventListener("click", resetAll);
+    els.toggleGlyphs.addEventListener("click", toggleGlyphs);
+    els.toggleTheme.addEventListener("click", toggleTheme);
+    els.copyAll.addEventListener("click", copySample);
+
+    for (const r of [els.size, els.ls, els.lh, els.pad]){
+        r.addEventListener("input", () => { applyStyles(); });
+    }
+    els.grid.addEventListener("change", applyStyles);
+    els.systemFallback.addEventListener("change", applyStyles);
+
+    // Live update text while typing
+    els.text.addEventListener("input", applyText);
+
+    // Init
+    resetAll();
+    buildGlyphGrid();
+    checkFont();
+</script>
+</body>
+</html>
