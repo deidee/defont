@@ -53,7 +53,7 @@ class Metrics:
 
     # Padding in cells (these offsets make xMin/yMin non-zero)
     left_pad: int = 1
-    right_pad: int = 1
+    right_pad: int = 0
     bottom_pad: int = 1
     top_pad: int = 1
 
