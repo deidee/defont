@@ -1,7 +1,9 @@
 
 # TODO
 
-- [ ] Build font generator tool.
-- [ ] Generate fonts.
-- [ ] Add fonts to ``htcdn.nl``.
-- [ ] Make stylesheet.
+## Done
+
+- [x] Build font generator tool.
+- [x] Generate fonts.
+- [x] Add fonts to ``htcdn.nl``.
+- [x] Make stylesheet.

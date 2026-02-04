@@ -1,6 +1,6 @@
 # ![defont](https://deidee.com/logo.png?str=deFont)
 
-Huisstijlletter van [deidee](https://deidee.nl/).
+Huisstijlletter van [deidee](https://deidee.nl/). Zie ook [detype](https://detype.nl/).
 
 ## Gebruik
 
@@ -25,4 +25,10 @@ Huisstijlletter van [deidee](https://deidee.nl/).
     font-weight: 400;
     font-style: normal;
 }
+```
+
+### CDN
+
+```html
+<link rel="stylesheet" href="https://hetcdn.nl/fonts/defont.css">
 ```
