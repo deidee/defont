@@ -13,13 +13,15 @@ Generates:
 Reads bitmap glyphs from:
   data/chars.php ($c array)
 
-Key fix:
-  - Horizontal metrics LSB MUST match glyph xMin (after bounds are calculated),
+Key fixes:
+  - Horizontal metrics: LSB MUST match glyph xMin (after bounds are calculated),
     including for COLR layer glyphs. This is critical for correct colored rendering.
+  - Optional per-pixel "mt_rand(0,3)"-style block extension to the RIGHT and BOTTOM
+    (deterministic per glyph+pixel+seed), similar to the PHP generator.
 
 Notes:
-  - Uses CPAL alpha bytes (0..255). Default alpha=128 (~0.5).
-  - Suppresses PHP warnings/notices and extracts the JSON blob from stdout if needed.
+  - Alpha transparency stored in CPAL as 0..255; default alpha=128 (~0.5)
+  - Suppresses PHP warnings/notices and extracts JSON blob from stdout if needed
 """
 
 from __future__ import annotations
@@ -27,9 +29,8 @@ from __future__ import annotations
 import argparse
 import json
 import os
-import shutil
-import subprocess
 import time
+import subprocess
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
@@ -51,9 +52,10 @@ class Metrics:
     # “Pixel” cell size in font units
     cell: int = 85
 
-    # Padding in cells (these offsets make xMin/yMin non-zero)
+    # Padding in cells
+    # NOTE: default inter-letter gap is left_pad + right_pad
     left_pad: int = 1
-    right_pad: int = 0
+    right_pad: int = 0  # <- 1-block default letter spacing (with left_pad=1)
     bottom_pad: int = 1
     top_pad: int = 1
 
@@ -78,7 +80,6 @@ def rect_to_pen(pen: TTGlyphPen, x0: int, y0: int, x1: int, y1: int) -> None:
 
 
 def find_upwards(start: Path, rel: str) -> Path | None:
-    """Find relpath by walking up from start."""
     start = start.resolve()
     for parent in [start] + list(start.parents):
         cand = parent / rel
@@ -100,7 +101,6 @@ def run_php_chars_to_json(chars_php: Path, debug: bool = False) -> Dict[int, Lis
 
     php = "php.exe" if os.name == "nt" else "php"
 
-    # Suppress warnings/notices and only echo JSON.
     php_code = (
         "ini_set('display_errors','0');"
         "ini_set('html_errors','0');"
@@ -122,7 +122,6 @@ def run_php_chars_to_json(chars_php: Path, debug: bool = False) -> Dict[int, Lis
     stderr = res.stderr or ""
 
     def extract_json_blob(s: str) -> str:
-        # If warnings sneak into stdout, pull out the {...} JSON part.
         start = s.find("{")
         end = s.rfind("}")
         if start == -1 or end == -1 or end <= start:
@@ -192,7 +191,6 @@ def make_palette_dejade(palette_size: int, seed: int, alpha: int) -> List[Tuple[
         b = rng.randint(0, 191)
         pal.append((r, g, b, alpha))
 
-    # October: first color pink-ish, then shuffle (like your PHP behavior)
     if datetime.now().month == 10 and pal:
         pal[0] = (255, 68, 136, alpha)
         rng.shuffle(pal)
@@ -202,8 +200,8 @@ def make_palette_dejade(palette_size: int, seed: int, alpha: int) -> List[Tuple[
 
 def attach_cpal(font: TTFont, palette_rgba: List[Tuple[int, int, int, int]]) -> None:
     """
-    Older fontTools on Windows expects CPAL colors as C_P_A_L_.Color objects
-    with .blue/.green/.red/.alpha, constructor order BGRA.
+    CPAL colors as C_P_A_L_.Color objects (constructor order BGRA).
+    This matches older fontTools that expects .blue/.green/.red/.alpha.
     """
     from fontTools.ttLib.tables.C_P_A_L_ import Color  # type: ignore
 
@@ -224,7 +222,7 @@ def attach_cpal(font: TTFont, palette_rgba: List[Tuple[int, int, int, int]]) -> 
 
 def attach_colr_v0(font: TTFont, color_layers: Dict[str, List[Tuple[str, int]]]) -> None:
     """
-    COLR v0 with LayerRecord objects (your fontTools requires .name).
+    COLR v0 with LayerRecord objects (older fontTools requires .name).
     """
     from fontTools.ttLib.tables.C_O_L_R_ import LayerRecord  # type: ignore
 
@@ -248,13 +246,12 @@ def attach_colr_v0(font: TTFont, color_layers: Dict[str, List[Tuple[str, int]]])
 
 def copy_main_css_to_dist(out_css: Path, debug: bool = False) -> None:
     src_css = find_project_file("src/style/main.css").resolve()
-    out_css = out_css.resolve()
+    out_css = Path(out_css).resolve()
     out_css.parent.mkdir(parents=True, exist_ok=True)
 
     if not src_css.exists():
         raise FileNotFoundError(f"Could not find CSS source file: {src_css}")
 
-    # Copy contents (not a filesystem copy), so line endings/encoding are predictable.
     data = src_css.read_text(encoding="utf-8")
     out_css.write_text(data, encoding="utf-8")
 
@@ -273,6 +270,8 @@ def build_font(
     palette_size: int,
     alpha: int,
     mono: bool,
+    jitter_px: int,
+    php_size: int,
     debug: bool = False,
 ) -> None:
     out_base = Path(out_base)
@@ -295,15 +294,27 @@ def build_font(
     def aw_for_cols(cols: int) -> int:
         return int((metrics.left_pad + cols + metrics.right_pad + metrics.letterspacing) * cell)
 
-    # Prepare palette (if not mono)
+    # Palette (if not mono)
     palette_size = max(1, min(int(palette_size), 256))
     alpha = max(0, min(int(alpha), 255))
     palette = make_palette_dejade(palette_size=palette_size, seed=seed, alpha=alpha)
 
+    # === mt_rand-style jitter (right & bottom extension) ===
+    jitter_px = max(0, int(jitter_px))
+    php_size = max(1, int(php_size))
+    # scale PHP jitter in "pixels" to font units
+    jitter_units = int(round(cell * (jitter_px / php_size)))  # ~11 when cell=85, jitter_px=3, php_size=24
+
+    def jitter_xy(key: int) -> Tuple[int, int]:
+        if jitter_units <= 0:
+            return (0, 0)
+        jx = int(mix32(key ^ 0xA5A5A5A5) % (jitter_units + 1))
+        jy = int(mix32(key ^ 0x5A5A5A5A) % (jitter_units + 1))
+        return (jx, jy)
+
     glyph_order: List[str] = [".notdef", "space"]
     glyphs: Dict[str, Any] = {}
     advance_widths: Dict[str, int] = {}
-    # NOTE: left side bearings will be computed from xMin after setupGlyf
 
     # base glyph -> list of (layerGlyphName, colorID)
     color_layers: Dict[str, List[Tuple[str, int]]] = {}
@@ -339,16 +350,26 @@ def build_font(
             continue
 
         if mono:
-            # Monochrome: draw directly into the base glyph
+            # Monochrome: draw directly into base glyph
             pen = TTGlyphPen(None)
             for idx, bit in enumerate(pixels):
                 if int(bit) != 1:
                     continue
                 row = idx // cols
                 col = idx % cols
+
                 x0 = int((metrics.left_pad + col) * cell)
                 y0 = int((metrics.bottom_pad + (ROWS - 1 - row)) * cell)
-                rect_to_pen(pen, x0, y0, x0 + cell, y0 + cell)
+
+                key = (seed * 131071) + (cp * 4099) + idx
+                jx, jy = jitter_xy(key)
+
+                x1 = x0 + cell + jx           # extend RIGHT
+                y1 = y0 + cell                # keep TOP fixed
+                y0j = y0 - jy                 # extend BOTTOM (downwards)
+
+                rect_to_pen(pen, x0, y0j, x1, y1)
+
             glyphs[gname] = pen.glyph()
             continue
 
@@ -359,29 +380,38 @@ def build_font(
         for idx, bit in enumerate(pixels):
             if int(bit) != 1:
                 continue
+
             row = idx // cols
             col = idx % cols
+
             x0 = int((metrics.left_pad + col) * cell)
             y0 = int((metrics.bottom_pad + (ROWS - 1 - row)) * cell)
-            x1 = x0 + cell
-            y1 = y0 + cell
 
-            # deterministic “random” color pick
             key = (seed * 131071) + (cp * 4099) + idx
+
+            # color selection
             color_id = int(mix32(key) % palette_size)
+
+            # jitter
+            jx, jy = jitter_xy(key)
+
+            x1 = x0 + cell + jx
+            y1 = y0 + cell
+            y0j = y0 - jy
 
             pen = layers.get(color_id)
             if pen is None:
                 pen = TTGlyphPen(None)
                 layers[color_id] = pen
-            rect_to_pen(pen, x0, y0, x1, y1)
+
+            rect_to_pen(pen, x0, y0j, x1, y1)
 
         color_layers[gname] = []
         for color_id in sorted(layers.keys()):
             layer_name = f"{gname}.c{color_id:03d}"
             glyph_order.append(layer_name)
             glyphs[layer_name] = layers[color_id].glyph()
-            advance_widths[layer_name] = aw  # same width as base
+            advance_widths[layer_name] = aw
             color_layers[gname].append((layer_name, color_id))
 
     # cmap (base glyphs only)
@@ -391,8 +421,6 @@ def build_font(
 
     fb = FontBuilder(metrics.upm, isTTF=True)
     fb.setupGlyphOrder(glyph_order)
-
-    # IMPORTANT: cmap before OS/2 (fontTools requires this)
     fb.setupCharacterMap(cmap)
 
     # Build glyf before hmtx, so we can compute xMin and set LSB correctly
@@ -444,7 +472,7 @@ def build_font(
     )
     fb.setupPost()
 
-    # Bounds (good hygiene)
+    # Recalc bounds (hygiene)
     for gn in glyph_order:
         try:
             glyf_table[gn].recalcBounds(glyf_table)
@@ -477,12 +505,14 @@ def build_font(
     print(f"  {woff2_path}")
 
     if debug:
-        # quick sanity: report A layer count and palette entries
         t = TTFont(ttf_path)
         if not mono and "COLR" in t and "CPAL" in t:
             layers_a = t["COLR"].ColorLayers.get("uni0041", [])
             pe = len(t["CPAL"].palettes[0])
-            print(f"[debug] COLR layers(uni0041)={len(layers_a)}  CPAL entries={pe}  alpha={alpha}")
+            print(
+                f"[debug] COLR layers(uni0041)={len(layers_a)}  CPAL entries={pe}  "
+                f"alpha={alpha}  jitter_px={jitter_px} jitter_units={jitter_units}"
+            )
 
 
 def main() -> None:
@@ -496,6 +526,11 @@ def main() -> None:
     ap.add_argument("--seed", type=int, default=0, help="Seed (0 => YYYYMMDD)")
     ap.add_argument("--palette", type=int, default=128, help="Palette size (1..256)")
     ap.add_argument("--alpha", type=int, default=128, help="Alpha 0..255 (default 128 ≈ 0.5)")
+
+    ap.add_argument("--jitter-px", type=int, default=3,
+                    help="Max mt_rand-style jitter amount (0..3 like PHP). Set 0 to disable.")
+    ap.add_argument("--php-size", type=int, default=24,
+                    help="Reference PHP block size for scaling jitter (default 24).")
 
     ap.add_argument("--mono", action="store_true", help="Monochrome build (no CPAL/COLR)")
     ap.add_argument("--debug", action="store_true", help="Debug output")
@@ -517,10 +552,11 @@ def main() -> None:
         palette_size=int(args.palette),
         alpha=int(args.alpha),
         mono=bool(args.mono),
+        jitter_px=int(args.jitter_px),
+        php_size=int(args.php_size),
         debug=bool(args.debug),
     )
 
-    # Copy CSS
     copy_main_css_to_dist(Path("dist/fonts/defont.css"), debug=args.debug)
 
 
