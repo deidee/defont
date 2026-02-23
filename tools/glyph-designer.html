@@ -1,0 +1,1263 @@
+<!-- tools/glyph-designer.html -->
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>defont — glyph designer</title>
+
+    <style>
+        :root{
+            --bg: #0f1115;
+            --panel: #151823;
+            --panel2: #10131c;
+            --text: #e8ecf2;
+            --muted: #aab3c0;
+            --border: rgba(255,255,255,.12);
+            --accent: #7dd3fc;
+            --ok: #22c55e;
+            --warn: #f59e0b;
+            --bad: #ef4444;
+            --shadow: 0 10px 30px rgba(0,0,0,.35);
+            --radius: 14px;
+
+            --cellW: 24px;
+            --cellH: 24px;
+            --gap: 0px;
+            --gridLine: rgba(255,255,255,.10);
+            --onFill: #0a0a0a;
+            --offFill: #ffffff;
+            --offFillDark: #0b0d12;
+
+            --baseline: rgba(125,211,252,.9);
+        }
+
+        [data-theme="light"]{
+            --bg: #f6f7fb;
+            --panel: #ffffff;
+            --panel2: #f3f5fa;
+            --text: #151823;
+            --muted: #5b6473;
+            --border: rgba(0,0,0,.10);
+            --accent: #0369a1;
+            --shadow: 0 12px 30px rgba(0,0,0,.08);
+            --gridLine: rgba(0,0,0,.10);
+            --onFill: #0b0b0b;
+            --offFill: #ffffff;
+            --offFillDark: #ffffff;
+            --baseline: rgba(3,105,161,.9);
+        }
+
+        @media (prefers-color-scheme: light){
+            [data-theme="auto"]{
+                --bg: #f6f7fb;
+                --panel: #ffffff;
+                --panel2: #f3f5fa;
+                --text: #151823;
+                --muted: #5b6473;
+                --border: rgba(0,0,0,.10);
+                --accent: #0369a1;
+                --shadow: 0 12px 30px rgba(0,0,0,.08);
+                --gridLine: rgba(0,0,0,.10);
+                --onFill: #0b0b0b;
+                --offFill: #ffffff;
+                --offFillDark: #ffffff;
+                --baseline: rgba(3,105,161,.9);
+            }
+        }
+
+        *{ box-sizing:border-box; }
+        body{
+            margin:0;
+            font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        header{
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 18px 18px 10px;
+            display:flex;
+            gap:12px;
+            align-items:flex-end;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+
+        h1{
+            font-size: 16px;
+            margin:0 0 4px;
+            font-weight: 700;
+            letter-spacing: .2px;
+        }
+        .sub{
+            margin:0;
+            color: var(--muted);
+            font-size: 12px;
+            line-height: 1.4;
+            max-width: 820px;
+        }
+
+        .wrap{
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 10px 18px 26px;
+            display:grid;
+            grid-template-columns: 380px 1fr 420px;
+            gap: 14px;
+            align-items:start;
+        }
+        @media (max-width: 1200px){
+            .wrap{ grid-template-columns: 360px 1fr; }
+            .right{ grid-column: 1 / -1; }
+        }
+        @media (max-width: 900px){
+            .wrap{ grid-template-columns: 1fr; }
+        }
+
+        .card{
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow:hidden;
+        }
+        .card h2{
+            font-size: 12px;
+            margin:0;
+            padding: 12px 14px;
+            border-bottom: 1px solid var(--border);
+            background: linear-gradient(180deg, var(--panel2), transparent);
+            letter-spacing:.2px;
+        }
+        .content{ padding: 12px 14px 14px; }
+
+        label{
+            display:block;
+            font-size: 12px;
+            color: var(--muted);
+            margin: 10px 0 6px;
+        }
+        input[type="text"], input[type="number"], select{
+            width:100%;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: var(--panel2);
+            color: var(--text);
+            padding: 9px 10px;
+            outline:none;
+            font-size: 13px;
+        }
+
+        textarea{
+            width:100%;
+            min-height: 120px;
+            resize: vertical;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: var(--panel2);
+            color: var(--text);
+            padding: 10px 12px;
+            outline:none;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            font-size: 12px;
+            line-height: 1.35;
+        }
+
+        .row{
+            display:flex;
+            gap:10px;
+            align-items:center;
+            justify-content: space-between;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+        .btn{
+            border: 1px solid var(--border);
+            background: var(--panel2);
+            color: var(--text);
+            padding: 8px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            cursor: pointer;
+            user-select:none;
+        }
+        .btn:hover{ border-color: rgba(125,211,252,.55); }
+        .btn.primary{
+            border-color: rgba(125,211,252,.55);
+            box-shadow: 0 0 0 2px rgba(125,211,252,.12);
+        }
+        .btn.danger:hover{ border-color: rgba(239,68,68,.55); }
+        .btn.ok:hover{ border-color: rgba(34,197,94,.55); }
+
+        .mono{
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        }
+
+        .meta{
+            display:flex;
+            gap:10px;
+            flex-wrap: wrap;
+            align-items:center;
+            margin-top: 10px;
+            color: var(--muted);
+            font-size: 12px;
+        }
+        .badge{
+            display:inline-flex;
+            gap:8px;
+            align-items:center;
+            padding: 6px 10px;
+            background: var(--panel2);
+            border: 1px solid var(--border);
+            border-radius: 999px;
+        }
+        .dot{
+            width: 8px; height: 8px; border-radius: 999px;
+            background: rgba(255,255,255,.35);
+        }
+        .dot.ok{ background: var(--ok); }
+        .dot.warn{ background: var(--warn); }
+        .dot.bad{ background: var(--bad); }
+
+        /* Editor */
+        .editorWrap{
+            padding: 14px;
+        }
+        .editorToolbar{
+            display:flex;
+            gap:10px;
+            align-items:center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+        }
+        .editorToolbar .left,
+        .editorToolbar .right{
+            display:flex;
+            gap:10px;
+            align-items:center;
+            flex-wrap: wrap;
+        }
+        .tog{
+            display:flex;
+            gap:8px;
+            align-items:center;
+            font-size: 12px;
+            color: var(--muted);
+            user-select:none;
+        }
+        .tog input{ transform: translateY(1px); }
+
+        .grid{
+            display:grid;
+            gap: var(--gap);
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            background: var(--panel2);
+            overflow:hidden;
+            width: fit-content;
+            max-width: 100%;
+            position: relative;
+            user-select:none;
+            touch-action: none;
+        }
+
+        .cell{
+            width: var(--cellW);
+            height: var(--cellH);
+            border-right: 1px solid var(--gridLine);
+            border-bottom: 1px solid var(--gridLine);
+            background: var(--offFillDark);
+            cursor: pointer;
+            position: relative;
+        }
+        [data-theme="light"] .cell{ background: var(--offFill); }
+        [data-theme="auto"] .cell{ background: var(--offFillDark); }
+        @media (prefers-color-scheme: light){
+            [data-theme="auto"] .cell{ background: var(--offFill); }
+        }
+
+        .cell.on{
+            background: var(--onFill);
+        }
+        .cell:hover::after{
+            content:"";
+            position:absolute;
+            inset:0;
+            outline: 2px solid rgba(125,211,252,.45);
+            outline-offset: -2px;
+            pointer-events:none;
+        }
+
+        /* baseline guide: thin line above second row from bottom */
+        .baselineLine{
+            position:absolute;
+            left:0; right:0;
+            height: 2px;
+            background: var(--baseline);
+            opacity: .95;
+            pointer-events:none;
+            transform: translateY(-1px);
+        }
+
+        /* Right pane previews */
+        .split{
+            display:grid;
+            gap: 12px;
+        }
+        .small{
+            font-size: 12px;
+            color: var(--muted);
+            line-height: 1.4;
+        }
+        .kv{
+            display:grid;
+            grid-template-columns: 120px 1fr;
+            gap: 6px 10px;
+            font-size: 12px;
+            color: var(--muted);
+            margin-top: 6px;
+        }
+        .kv b{ color: var(--text); font-weight: 650; }
+
+        .previewBox{
+            border: 1px solid var(--border);
+            background: var(--panel2);
+            border-radius: 14px;
+            padding: 10px;
+            overflow:auto;
+            max-height: 260px;
+        }
+
+        .toast{
+            position: fixed;
+            left: 50%;
+            bottom: 14px;
+            transform: translateX(-50%);
+            background: rgba(20,24,35,.92);
+            color:#fff;
+            border: 1px solid rgba(255,255,255,.12);
+            border-radius: 999px;
+            padding: 10px 14px;
+            font-size: 12px;
+            box-shadow: 0 12px 30px rgba(0,0,0,.35);
+            opacity: 0;
+            pointer-events:none;
+            transition: opacity .15s ease;
+            z-index: 9999;
+        }
+        .toast.show{ opacity: 1; }
+
+        .fileRow{
+            display:flex;
+            gap:10px;
+            align-items:center;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+        input[type="file"]{
+            width:100%;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: var(--panel2);
+            color: var(--muted);
+            padding: 8px 10px;
+        }
+
+        .hr{
+            height:1px;
+            background: var(--border);
+            margin: 10px 0;
+        }
+    </style>
+</head>
+
+<body data-theme="auto">
+<header>
+    <div>
+        <h1>defont — glyph designer</h1>
+        <p class="sub">
+            9-row variable-width bitmap glyphs. Click/drag to paint. Export as PHP line (for <span class="mono">data/chars.php</span>),
+            JSON, and an SVG preview. Optional: load an existing <span class="mono">chars.php</span> to browse + edit glyphs.
+        </p>
+    </div>
+    <div class="row" style="margin:0;">
+        <button class="btn" id="themeBtn">Theme</button>
+        <button class="btn" id="helpBtn">Help</button>
+    </div>
+</header>
+
+<div class="wrap">
+    <!-- Left: controls / import -->
+    <section class="card">
+        <h2>Glyph</h2>
+        <div class="content">
+            <label for="charInput">Character (supports space)</label>
+            <input id="charInput" type="text" maxlength="2" value="A" />
+            <div class="kv">
+                <div>Display</div><b id="charDisplay"></b>
+                <div>Codepoint</div><b class="mono" id="codepointHex"></b>
+                <div>Decimal</div><b class="mono" id="codepointDec"></b>
+            </div>
+
+            <div class="row">
+                <div style="flex:1; min-width: 160px;">
+                    <label for="colsInput">Columns</label>
+                    <input id="colsInput" type="number" min="1" max="24" value="3" />
+                </div>
+                <div style="flex:1; min-width: 160px;">
+                    <label for="cellSize">Cell size</label>
+                    <input id="cellSize" type="number" min="12" max="60" value="24" />
+                </div>
+            </div>
+
+            <div class="row">
+                <button class="btn ok" id="clearBtn">Clear</button>
+                <button class="btn" id="invertBtn">Invert</button>
+                <button class="btn" id="trimBtn">Trim cols</button>
+            </div>
+
+            <div class="row">
+                <button class="btn" id="shiftL">◀ Shift</button>
+                <button class="btn" id="shiftR">Shift ▶</button>
+                <button class="btn" id="shiftU">▲ Shift</button>
+                <button class="btn" id="shiftD">Shift ▼</button>
+            </div>
+
+            <div class="hr"></div>
+
+            <label>Import</label>
+            <div class="small">
+                Load an existing <span class="mono">data/chars.php</span> to browse and edit.
+                Or paste a PHP <span class="mono">array(...)</span> / comma list below.
+            </div>
+
+            <div class="fileRow">
+                <input id="charsFile" type="file" accept=".php,.txt" />
+            </div>
+
+            <label for="glyphSelect">Loaded glyphs</label>
+            <select id="glyphSelect" disabled>
+                <option value="">(no chars.php loaded)</option>
+            </select>
+
+            <label for="importText">Paste pixels (PHP array / CSV)</label>
+            <textarea id="importText" spellcheck="false" placeholder="$c[0x41] = array(1,0,1,...);  or  1,0,1,..."></textarea>
+            <div class="row">
+                <button class="btn primary" id="importBtn">Import</button>
+                <button class="btn" id="copyImportHint">Copy PHP line</button>
+            </div>
+
+            <div class="meta">
+                <span class="badge"><span class="dot" id="loadDot"></span><span id="loadStatus">No chars.php loaded</span></span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Middle: editor -->
+    <section class="card">
+        <h2>Editor</h2>
+        <div class="editorWrap">
+            <div class="editorToolbar">
+                <div class="left">
+                    <label class="tog"><input id="dragMode" type="checkbox" checked /> Drag to paint</label>
+                    <label class="tog"><input id="baselineToggle" type="checkbox" checked /> Baseline guide</label>
+                    <label class="tog"><input id="gridToggle" type="checkbox" checked /> Grid lines</label>
+                </div>
+                <div class="right">
+                    <button class="btn" id="downloadSvg">Download SVG</button>
+                    <button class="btn" id="downloadJson">Download JSON</button>
+                </div>
+            </div>
+
+            <div id="grid" class="grid" aria-label="glyph grid"></div>
+
+            <div class="meta">
+                <span class="badge"><span class="mono">ROWS</span>&nbsp;9</span>
+                <span class="badge"><span class="mono" id="metaCols"></span>&nbsp;cols</span>
+                <span class="badge"><span class="mono" id="metaOnes"></span>&nbsp;ones</span>
+                <span class="badge"><span class="mono" id="metaLen"></span>&nbsp;len</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Right: exports / previews -->
+    <section class="card right">
+        <h2>Export</h2>
+        <div class="content split">
+            <div>
+                <label>PHP line (for data/chars.php)</label>
+                <textarea id="phpOut" spellcheck="false"></textarea>
+                <div class="row">
+                    <button class="btn primary" id="copyPhp">Copy</button>
+                    <button class="btn" id="copyHex">Copy codepoint</button>
+                    <button class="btn danger" id="copyArrayOnly">Copy array(...)</button>
+                </div>
+                <div class="small" style="margin-top:8px;">
+                    Tip: for SPACE (U+0020) you probably want an empty array: <span class="mono">$c[0x20] = array();</span>
+                </div>
+            </div>
+
+            <div>
+                <label>JSON</label>
+                <textarea id="jsonOut" spellcheck="false"></textarea>
+                <div class="row">
+                    <button class="btn" id="copyJson">Copy</button>
+                    <button class="btn" id="copyPixels">Copy pixels[]</button>
+                </div>
+            </div>
+
+            <div>
+                <label>SVG preview</label>
+                <div class="previewBox" id="svgPreviewBox"></div>
+                <div class="row" style="margin-top:10px;">
+                    <button class="btn" id="copySvg">Copy SVG</button>
+                    <button class="btn" id="toggleSvgBg">Toggle bg</button>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+    (() => {
+        const ROWS = 9;
+
+        const $ = (id) => document.getElementById(id);
+
+        const els = {
+            themeBtn: $("themeBtn"),
+            helpBtn: $("helpBtn"),
+
+            charInput: $("charInput"),
+            charDisplay: $("charDisplay"),
+            codepointHex: $("codepointHex"),
+            codepointDec: $("codepointDec"),
+
+            colsInput: $("colsInput"),
+            cellSize: $("cellSize"),
+
+            clearBtn: $("clearBtn"),
+            invertBtn: $("invertBtn"),
+            trimBtn: $("trimBtn"),
+
+            shiftL: $("shiftL"),
+            shiftR: $("shiftR"),
+            shiftU: $("shiftU"),
+            shiftD: $("shiftD"),
+
+            dragMode: $("dragMode"),
+            baselineToggle: $("baselineToggle"),
+            gridToggle: $("gridToggle"),
+
+            grid: $("grid"),
+
+            metaCols: $("metaCols"),
+            metaOnes: $("metaOnes"),
+            metaLen: $("metaLen"),
+
+            phpOut: $("phpOut"),
+            jsonOut: $("jsonOut"),
+            svgPreviewBox: $("svgPreviewBox"),
+
+            copyPhp: $("copyPhp"),
+            copyHex: $("copyHex"),
+            copyArrayOnly: $("copyArrayOnly"),
+            copyJson: $("copyJson"),
+            copyPixels: $("copyPixels"),
+            copySvg: $("copySvg"),
+            toggleSvgBg: $("toggleSvgBg"),
+
+            downloadSvg: $("downloadSvg"),
+            downloadJson: $("downloadJson"),
+
+            charsFile: $("charsFile"),
+            glyphSelect: $("glyphSelect"),
+            importText: $("importText"),
+            importBtn: $("importBtn"),
+            copyImportHint: $("copyImportHint"),
+
+            loadDot: $("loadDot"),
+            loadStatus: $("loadStatus"),
+
+            toast: $("toast"),
+        };
+
+        // state
+        let cols = 3;
+        let pixels = new Array(ROWS * cols).fill(0);
+        let isPointerDown = false;
+        let paintValue = 1;
+        let svgBgOn = false;
+
+        // loaded chars.php map
+        /** @type {Map<number, number[]>} */
+        let loadedMap = new Map();
+
+        function showToast(msg){
+            els.toast.textContent = msg;
+            els.toast.classList.add("show");
+            window.clearTimeout(showToast._t);
+            showToast._t = window.setTimeout(() => els.toast.classList.remove("show"), 900);
+        }
+
+        function toCodepoint(str){
+            // allow space
+            if (str === "") return null;
+            const cp = str.codePointAt(0);
+            return (typeof cp === "number") ? cp : null;
+        }
+
+        function fmtHex(cp){
+            const w = cp <= 0xFFFF ? 4 : 6;
+            return "U+" + cp.toString(16).toUpperCase().padStart(w, "0");
+        }
+
+        function fmt0x(cp){
+            return "0x" + cp.toString(16).toUpperCase();
+        }
+
+        function charLabel(ch){
+            if (ch === " ") return "␠ (space)";
+            return ch;
+        }
+
+        function setTheme(next){
+            document.body.setAttribute("data-theme", next);
+            localStorage.setItem("defontGlyphTheme", next);
+        }
+
+        function cycleTheme(){
+            const cur = document.body.getAttribute("data-theme") || "auto";
+            const nxt = cur === "auto" ? "dark" : (cur === "dark" ? "light" : "auto");
+            setTheme(nxt);
+            showToast("Theme: " + nxt);
+        }
+
+        function applyCellSize(){
+            const s = Math.max(12, Math.min(60, parseInt(els.cellSize.value || "24", 10)));
+            document.documentElement.style.setProperty("--cellW", s + "px");
+            document.documentElement.style.setProperty("--cellH", s + "px");
+        }
+
+        function applyGridLines(){
+            const on = !!els.gridToggle.checked;
+            document.documentElement.style.setProperty("--gridLine", on ? "var(--gridLine)" : "transparent");
+            els.grid.style.borderColor = on ? "var(--border)" : "transparent";
+        }
+
+        function setCols(n){
+            n = Math.max(1, Math.min(24, parseInt(String(n), 10) || 3));
+            cols = n;
+            els.colsInput.value = String(cols);
+
+            const next = new Array(ROWS * cols).fill(0);
+            // copy overlap region
+            const oldCols = Math.max(1, Math.floor(pixels.length / ROWS));
+            const minCols = Math.min(oldCols, cols);
+            for (let r=0;r<ROWS;r++){
+                for (let c=0;c<minCols;c++){
+                    next[r*cols + c] = pixels[r*oldCols + c] ? 1 : 0;
+                }
+            }
+            pixels = next;
+            render();
+        }
+
+        function trimCols(){
+            // remove trailing empty columns
+            let lastNonEmpty = -1;
+            for (let c=cols-1; c>=0; c--){
+                let any = false;
+                for (let r=0;r<ROWS;r++){
+                    if (pixels[r*cols + c] === 1){ any = true; break; }
+                }
+                if (any){ lastNonEmpty = c; break; }
+            }
+            const newCols = Math.max(1, lastNonEmpty + 1);
+            setCols(newCols);
+            showToast("Trimmed to " + newCols + " cols");
+        }
+
+        function clearAll(){
+            pixels.fill(0);
+            render();
+        }
+
+        function invertAll(){
+            for (let i=0;i<pixels.length;i++) pixels[i] = pixels[i] ? 0 : 1;
+            render();
+        }
+
+        function shift(dx, dy){
+            const next = new Array(ROWS * cols).fill(0);
+            for (let r=0;r<ROWS;r++){
+                for (let c=0;c<cols;c++){
+                    const rr = r - dy;
+                    const cc = c - dx;
+                    if (rr < 0 || rr >= ROWS || cc < 0 || cc >= cols) continue;
+                    next[r*cols + c] = pixels[rr*cols + cc] ? 1 : 0;
+                }
+            }
+            pixels = next;
+            render();
+        }
+
+        function setCell(r, c, v){
+            const i = r*cols + c;
+            if (pixels[i] === v) return;
+            pixels[i] = v;
+        }
+
+        function onCount(){
+            let n=0;
+            for (const p of pixels) if (p===1) n++;
+            return n;
+        }
+
+        function updateMeta(){
+            els.metaCols.textContent = String(cols);
+            els.metaOnes.textContent = String(onCount());
+            els.metaLen.textContent = String(pixels.length);
+        }
+
+        function buildPhpLine(){
+            const ch = els.charInput.value;
+            const cp = toCodepoint(ch);
+            if (cp == null) return "";
+
+            // Optional: if it's exactly space and all zeros, show empty array like original.
+            const allZero = pixels.every(v => v === 0);
+            if (cp === 0x20 && allZero){
+                return `$c[0x20] = array(); //[SPACE]`;
+            }
+
+            const arr = pixels.join(",");
+            const comment = (ch === " ") ? "[SPACE]" : ch;
+            return `$c[${fmt0x(cp)}] = array(${arr}); //${comment}`;
+        }
+
+        function buildJson(){
+            const ch = els.charInput.value;
+            const cp = toCodepoint(ch);
+            const obj = {
+                char: (ch === "" ? null : ch),
+                display: (ch === " " ? "␠" : ch),
+                codepoint: cp,
+                hex: cp == null ? null : fmtHex(cp),
+                rows: ROWS,
+                cols: cols,
+                len: pixels.length,
+                ones: onCount(),
+                pixels: pixels.slice(),
+                order: "row-major",
+            };
+            return JSON.stringify(obj, null, 2);
+        }
+
+        function buildSvg(){
+            const cellPx = 24; // preview scale in px (not font units)
+            const w = cols * cellPx;
+            const h = ROWS * cellPx;
+
+            const rects = [];
+            // row-major; show row 0 at top
+            for (let r=0;r<ROWS;r++){
+                for (let c=0;c<cols;c++){
+                    if (pixels[r*cols + c] !== 1) continue;
+                    const x = c * cellPx;
+                    const y = r * cellPx;
+                    rects.push(`<rect x="${x}" y="${y}" width="${cellPx}" height="${cellPx}" />`);
+                }
+            }
+
+            const bg = svgBgOn ? `<rect x="0" y="0" width="${w}" height="${h}" fill="white"/>` : "";
+            const fg = `<g fill="black">${rects.join("")}</g>`;
+
+            const cp = toCodepoint(els.charInput.value);
+            const title = cp == null ? "glyph" : `glyph ${fmtHex(cp)}`;
+
+            return `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">
+  <title>${escapeXml(title)}</title>
+  ${bg}
+  ${fg}
+</svg>`;
+        }
+
+        function escapeXml(s){
+            return String(s)
+                .replaceAll("&","&amp;")
+                .replaceAll("<","&lt;")
+                .replaceAll(">","&gt;")
+                .replaceAll('"',"&quot;")
+                .replaceAll("'","&apos;");
+        }
+
+        function refreshOutputs(){
+            els.phpOut.value = buildPhpLine();
+            els.jsonOut.value = buildJson();
+
+            const svg = buildSvg();
+            els.svgPreviewBox.textContent = "";
+            const pre = document.createElement("pre");
+            pre.className = "mono";
+            pre.style.margin = "0";
+            pre.style.whiteSpace = "pre";
+            pre.textContent = svg;
+            els.svgPreviewBox.appendChild(pre);
+        }
+
+        function render(){
+            // set CSS grid columns
+            els.grid.style.gridTemplateColumns = `repeat(${cols}, var(--cellW))`;
+
+            // build cells
+            els.grid.textContent = "";
+
+            // baseline: above second row from bottom => between row 6 and 7 (0-index)
+            // y position in px = (ROWS - 2) * cellH
+            const baselineOn = !!els.baselineToggle.checked;
+            if (baselineOn){
+                const line = document.createElement("div");
+                line.className = "baselineLine";
+                // place at boundary above second row from bottom
+                const cellH = parseInt(getComputedStyle(document.documentElement).getPropertyValue("--cellH"), 10) || 24;
+                line.style.top = ((ROWS - 2) * cellH) + "px";
+                els.grid.appendChild(line);
+            }
+
+            // We need cells after baseline; baseline is absolutely positioned anyway.
+            for (let r=0;r<ROWS;r++){
+                for (let c=0;c<cols;c++){
+                    const i = r*cols + c;
+                    const cell = document.createElement("div");
+                    cell.className = "cell" + (pixels[i] ? " on" : "");
+                    cell.dataset.r = String(r);
+                    cell.dataset.c = String(c);
+                    els.grid.appendChild(cell);
+                }
+            }
+
+            updateMeta();
+            refreshOutputs();
+        }
+
+        function setCharFromInput(){
+            const raw = els.charInput.value ?? "";
+            // allow exactly one codepoint; keep space if user typed it.
+            let ch = raw;
+            if (raw.length > 0){
+                ch = Array.from(raw)[0]; // handles surrogate pairs
+                // keep input visually to first char
+                els.charInput.value = ch;
+            }
+
+            const cp = toCodepoint(ch);
+            els.charDisplay.textContent = (ch === "" ? "(empty)" : charLabel(ch));
+            els.codepointHex.textContent = cp == null ? "-" : fmtHex(cp);
+            els.codepointDec.textContent = cp == null ? "-" : String(cp);
+
+            // If we loaded a chars.php and it has this cp, load it automatically.
+            if (cp != null && loadedMap.has(cp)){
+                loadGlyphFromMap(cp);
+                showToast("Loaded from chars.php");
+                return;
+            }
+
+            refreshOutputs();
+        }
+
+        // Drag paint logic
+        function cellFromEvent(e){
+            const t = e.target;
+            if (!(t instanceof HTMLElement)) return null;
+            if (!t.classList.contains("cell")) return null;
+            const r = parseInt(t.dataset.r, 10);
+            const c = parseInt(t.dataset.c, 10);
+            if (!Number.isFinite(r) || !Number.isFinite(c)) return null;
+            return { el: t, r, c };
+        }
+
+        function applyPaintAt(r, c){
+            setCell(r, c, paintValue);
+            // Update only cell class quickly (avoid full re-render during drag)
+            const idx = r*cols + c;
+            const nodeIndex = baselineVisible() ? (1 + idx) : idx; // baselineLine inserted first
+            const child = els.grid.children[nodeIndex];
+            if (child && child.classList){
+                child.classList.toggle("on", pixels[idx] === 1);
+            }
+        }
+
+        function baselineVisible(){
+            return !!els.baselineToggle.checked;
+        }
+
+        function onPointerDown(e){
+            const cell = cellFromEvent(e);
+            if (!cell) return;
+
+            isPointerDown = true;
+            els.grid.setPointerCapture?.(e.pointerId);
+
+            // Determine paint mode: if starting cell is off -> paint on, else paint off
+            const idx = cell.r*cols + cell.c;
+            paintValue = pixels[idx] ? 0 : 1;
+
+            applyPaintAt(cell.r, cell.c);
+            updateMeta();
+            refreshOutputs();
+            e.preventDefault();
+        }
+
+        function onPointerMove(e){
+            if (!isPointerDown) return;
+            if (!els.dragMode.checked) return;
+
+            const cell = cellFromEvent(e);
+            if (!cell) return;
+
+            applyPaintAt(cell.r, cell.c);
+            updateMeta();
+            refreshOutputs();
+            e.preventDefault();
+        }
+
+        function onPointerUp(e){
+            if (!isPointerDown) return;
+            isPointerDown = false;
+            try{ els.grid.releasePointerCapture?.(e.pointerId); }catch{}
+            // full render to ensure baseline layering consistent
+            render();
+            e.preventDefault();
+        }
+
+        // Import parsing
+        function parsePixelsFromText(text){
+            const s = String(text || "").trim();
+            if (!s) return null;
+
+            // Try to find "array( ... )"
+            let body = s;
+            const m = s.match(/array\s*\(([\s\S]*?)\)\s*;?/i);
+            if (m) body = m[1];
+
+            // Extract 0/1 values robustly
+            const nums = body.match(/[01]/g);
+            if (!nums) return [];
+
+            return nums.map(ch => ch === "1" ? 1 : 0);
+        }
+
+        function parseCharsPhp(text){
+            // Very forgiving parser:
+            // - strips block comments and line comments
+            // - captures $c[KEY] = array(...);
+            // - KEY supports 0x.. or decimal
+            const src = String(text || "");
+
+            // remove block comments
+            let s = src.replace(/\/\*[\s\S]*?\*\//g, "");
+            // remove line comments (simple)
+            s = s.replace(/^\s*\/\/.*$/gm, "");
+            s = s.replace(/\/\/.*$/gm, "");
+
+            const map = new Map();
+
+            // match $c[ ... ] = array( ... );
+            const re = /\$c\s*\[\s*([^\]]+?)\s*\]\s*=\s*array\s*\(\s*([\s\S]*?)\s*\)\s*;/g;
+            let match;
+            while ((match = re.exec(s)) !== null){
+                const keyRaw = match[1].trim();
+
+                // ignore string keys like '.notdef'
+                let cp = null;
+                if (/^0x[0-9a-f]+$/i.test(keyRaw)){
+                    cp = parseInt(keyRaw, 16);
+                } else if (/^\d+$/.test(keyRaw)){
+                    cp = parseInt(keyRaw, 10);
+                } else {
+                    continue;
+                }
+
+                const body = match[2];
+                const nums = body.match(/[01]/g);
+                const arr = nums ? nums.map(ch => ch === "1" ? 1 : 0) : [];
+                map.set(cp, arr);
+            }
+
+            // also capture $c[0x20] = array(); (empty)
+            const reEmpty = /\$c\s*\[\s*([^\]]+?)\s*\]\s*=\s*array\s*\(\s*\)\s*;/g;
+            while ((match = reEmpty.exec(s)) !== null){
+                const keyRaw = match[1].trim();
+                let cp = null;
+                if (/^0x[0-9a-f]+$/i.test(keyRaw)){
+                    cp = parseInt(keyRaw, 16);
+                } else if (/^\d+$/.test(keyRaw)){
+                    cp = parseInt(keyRaw, 10);
+                } else {
+                    continue;
+                }
+                if (!map.has(cp)) map.set(cp, []);
+            }
+
+            return map;
+        }
+
+        function populateGlyphSelect(map){
+            els.glyphSelect.textContent = "";
+            const opt0 = document.createElement("option");
+            opt0.value = "";
+            opt0.textContent = "(select glyph)";
+            els.glyphSelect.appendChild(opt0);
+
+            const cps = Array.from(map.keys()).sort((a,b)=>a-b);
+            for (const cp of cps){
+                const opt = document.createElement("option");
+                opt.value = String(cp);
+                const ch = String.fromCodePoint(cp);
+                opt.textContent = `${fmtHex(cp)}  ${ch === " " ? "␠" : ch}`;
+                els.glyphSelect.appendChild(opt);
+            }
+
+            els.glyphSelect.disabled = false;
+        }
+
+        function loadGlyphFromMap(cp){
+            const arr = loadedMap.get(cp);
+            if (!arr) return;
+
+            if (arr.length === 0){
+                // space
+                setCols(1);
+                pixels.fill(0);
+                render();
+                return;
+            }
+
+            if (arr.length % ROWS !== 0){
+                showToast("Loaded glyph has invalid length");
+                return;
+            }
+            const newCols = Math.max(1, arr.length / ROWS);
+            cols = newCols;
+            els.colsInput.value = String(cols);
+            pixels = arr.slice();
+            render();
+        }
+
+        function updateLoadStatus(ok, msg){
+            els.loadDot.classList.remove("ok","warn","bad");
+            els.loadDot.classList.add(ok ? "ok" : "warn");
+            els.loadStatus.textContent = msg;
+        }
+
+        // Downloads
+        function download(filename, content, mime){
+            const blob = new Blob([content], {type: mime});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+        }
+
+        async function copy(text){
+            try{
+                await navigator.clipboard.writeText(text);
+                return true;
+            }catch{
+                const ta = document.createElement("textarea");
+                ta.value = text;
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand("copy");
+                ta.remove();
+                return true;
+            }
+        }
+
+        // Wire up events
+        els.themeBtn.addEventListener("click", cycleTheme);
+
+        els.helpBtn.addEventListener("click", () => {
+            alert(
+                `How to use
+
+1) Pick a character (space works).
+2) Set columns (width).
+3) Click cells to toggle; drag paints.
+4) Export:
+   - PHP line for data/chars.php
+   - JSON (rows/cols/pixels)
+   - SVG preview
+
+Import:
+- Load your data/chars.php to browse glyphs.
+- Or paste a PHP array(...) / CSV list into the import box.
+
+Notes:
+- ROWS is fixed at 9 for defont.
+- “Trim cols” removes trailing empty columns.`
+            );
+        });
+
+        els.charInput.addEventListener("input", setCharFromInput);
+        els.colsInput.addEventListener("change", () => setCols(els.colsInput.value));
+        els.cellSize.addEventListener("change", () => { applyCellSize(); render(); });
+
+        els.clearBtn.addEventListener("click", () => { clearAll(); showToast("Cleared"); });
+        els.invertBtn.addEventListener("click", () => { invertAll(); showToast("Inverted"); });
+        els.trimBtn.addEventListener("click", trimCols);
+
+        els.shiftL.addEventListener("click", () => shift(-1, 0));
+        els.shiftR.addEventListener("click", () => shift( 1, 0));
+        els.shiftU.addEventListener("click", () => shift( 0,-1));
+        els.shiftD.addEventListener("click", () => shift( 0, 1));
+
+        els.baselineToggle.addEventListener("change", render);
+        els.gridToggle.addEventListener("change", () => { applyGridLines(); render(); });
+        els.dragMode.addEventListener("change", () => showToast(els.dragMode.checked ? "Drag paint on" : "Drag paint off"));
+
+        els.grid.addEventListener("pointerdown", onPointerDown);
+        window.addEventListener("pointermove", onPointerMove, {passive:false});
+        window.addEventListener("pointerup", onPointerUp);
+
+        els.copyPhp.addEventListener("click", async () => {
+            await copy(els.phpOut.value);
+            showToast("Copied PHP line");
+        });
+
+        els.copyHex.addEventListener("click", async () => {
+            const cp = toCodepoint(els.charInput.value);
+            await copy(cp == null ? "" : fmtHex(cp));
+            showToast("Copied codepoint");
+        });
+
+        els.copyArrayOnly.addEventListener("click", async () => {
+            const s = els.phpOut.value;
+            const m = s.match(/array\s*\([\s\S]*\)/i);
+            await copy(m ? m[0] : s);
+            showToast("Copied array(...)");
+        });
+
+        els.copyJson.addEventListener("click", async () => {
+            await copy(els.jsonOut.value);
+            showToast("Copied JSON");
+        });
+
+        els.copyPixels.addEventListener("click", async () => {
+            await copy(JSON.stringify(pixels));
+            showToast("Copied pixels[]");
+        });
+
+        els.copySvg.addEventListener("click", async () => {
+            const svg = buildSvg();
+            await copy(svg);
+            showToast("Copied SVG");
+        });
+
+        els.toggleSvgBg.addEventListener("click", () => {
+            svgBgOn = !svgBgOn;
+            refreshOutputs();
+            showToast(svgBgOn ? "SVG bg: on" : "SVG bg: off");
+        });
+
+        els.downloadSvg.addEventListener("click", () => {
+            const cp = toCodepoint(els.charInput.value);
+            const name = cp == null ? "character.svg" : `character-u${cp.toString(16).toUpperCase().padStart(cp<=0xFFFF?4:6,"0")}.svg`;
+            download(name, buildSvg(), "image/svg+xml;charset=utf-8");
+            showToast("Downloaded SVG");
+        });
+
+        els.downloadJson.addEventListener("click", () => {
+            const cp = toCodepoint(els.charInput.value);
+            const name = cp == null ? "glyph.json" : `glyph-u${cp.toString(16).toUpperCase().padStart(cp<=0xFFFF?4:6,"0")}.json`;
+            download(name, buildJson(), "application/json;charset=utf-8");
+            showToast("Downloaded JSON");
+        });
+
+        els.importBtn.addEventListener("click", () => {
+            const arr = parsePixelsFromText(els.importText.value);
+            if (arr == null){
+                showToast("Nothing to import");
+                return;
+            }
+            if (arr.length === 0){
+                setCols(1);
+                pixels.fill(0);
+                render();
+                showToast("Imported empty (space-like)");
+                return;
+            }
+            if (arr.length % ROWS !== 0){
+                showToast("Import length must be divisible by 9");
+                return;
+            }
+            const newCols = Math.max(1, arr.length / ROWS);
+            cols = newCols;
+            els.colsInput.value = String(cols);
+            pixels = arr.slice();
+            render();
+            showToast("Imported");
+        });
+
+        els.copyImportHint.addEventListener("click", async () => {
+            await copy(els.phpOut.value);
+            showToast("Copied current PHP line");
+        });
+
+        els.glyphSelect.addEventListener("change", () => {
+            const v = els.glyphSelect.value;
+            if (!v) return;
+            const cp = parseInt(v, 10);
+            if (!Number.isFinite(cp)) return;
+            const ch = String.fromCodePoint(cp);
+            els.charInput.value = ch;
+            setCharFromInput();
+            loadGlyphFromMap(cp);
+        });
+
+        els.charsFile.addEventListener("change", async () => {
+            const file = els.charsFile.files && els.charsFile.files[0];
+            if (!file) return;
+
+            const text = await file.text();
+            const map = parseCharsPhp(text);
+
+            loadedMap = map;
+            populateGlyphSelect(map);
+
+            if (map.size > 0){
+                updateLoadStatus(true, `Loaded ${map.size} glyphs`);
+                showToast(`Loaded ${map.size} glyphs`);
+                // Auto-load current char if possible
+                const cp = toCodepoint(els.charInput.value);
+                if (cp != null && map.has(cp)) loadGlyphFromMap(cp);
+            }else{
+                updateLoadStatus(false, "No numeric glyphs found");
+                showToast("No glyphs found in file");
+            }
+        });
+
+        // Init
+        const savedTheme = localStorage.getItem("defontGlyphTheme");
+        if (savedTheme) setTheme(savedTheme);
+
+        applyCellSize();
+        applyGridLines();
+        setCols(3);
+        setCharFromInput();
+        render();
+    })();
+</script>
+</body>
+</html>
