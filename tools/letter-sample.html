@@ -17,7 +17,10 @@
             --accent: #7dd3fc;
             --shadow: 0 10px 30px rgba(0,0,0,.35);
             --radius: 14px;
+            --pagepad: clamp(14px, 2.2vw, 28px);
         }
+
+        /* Explicit light mode */
         [data-theme="light"]{
             --bg: #f6f7fb;
             --panel: #ffffff;
@@ -29,6 +32,24 @@
             --shadow: 0 12px 30px rgba(0,0,0,.08);
         }
 
+        /* Auto mode follows system preference */
+        @media (prefers-color-scheme: light){
+            body[data-theme="auto"]{
+                --bg: #f6f7fb;
+                --panel: #ffffff;
+                --panel2: #f3f5fa;
+                --text: #151823;
+                --muted: #5b6473;
+                --border: rgba(0,0,0,.10);
+                --accent: #0369a1;
+                --shadow: 0 12px 30px rgba(0,0,0,.08);
+            }
+            body[data-theme="auto"] .toast{
+                background: rgba(20, 24, 35, .92);
+                border-color: rgba(255,255,255,.18);
+            }
+        }
+
         *{ box-sizing:border-box; }
         body{
             margin:0;
@@ -38,9 +59,8 @@
         }
 
         header{
-            padding: 22px 18px 10px;
-            max-width: 1200px;
-            margin: 0 auto;
+            padding: 22px var(--pagepad) 10px;
+            width: 100%;
         }
         h1{
             font-size: 18px;
@@ -56,12 +76,12 @@
         }
 
         .wrap{
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 12px 18px 26px;
+            width: 100%;
+            padding: 12px var(--pagepad) 26px;
             display: grid;
             gap: 14px;
-            grid-template-columns: 380px 1fr;
+            grid-template-columns: clamp(300px, 28vw, 440px) 1fr;
+            align-items: start;
         }
         @media (max-width: 980px){
             .wrap{ grid-template-columns: 1fr; }
@@ -136,6 +156,7 @@
             border-color: rgba(125, 211, 252, .5);
             box-shadow: 0 0 0 2px rgba(125, 211, 252, .12);
         }
+
         .tog{
             display:flex;
             align-items:center;
@@ -200,6 +221,7 @@
             font-kerning: normal;
             text-rendering: geometricPrecision;
         }
+
         .meta{
             margin-top: 10px;
             font-size: 12px;
@@ -251,27 +273,28 @@
         .gridwrap{
             padding: 12px 14px 16px;
             display:grid;
-            grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
-            gap: 10px;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 12px;
         }
 
         .gcell{
             border: 1px solid var(--border);
-            border-radius: 12px;
+            border-radius: 14px;
             background: var(--panel2);
-            padding: 10px 10px 8px;
+            padding: 12px 12px 10px;
             cursor: pointer;
             user-select: none;
-            min-height: 86px;
+            min-height: 118px;
             display:flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 10px;
             justify-content: space-between;
         }
         .gcell:hover{ border-color: rgba(125, 211, 252, .55); }
+
         .gchar{
             font-family: "defont", system-ui, sans-serif;
-            font-size: 34px;
+            font-size: 54px;
             line-height: 1;
         }
         .ginfo{
@@ -284,6 +307,7 @@
             overflow: hidden;
             text-overflow: ellipsis;
         }
+
         .mono{ font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
 
         .toast{
@@ -310,7 +334,7 @@
     </style>
 </head>
 
-<body data-theme="dark">
+<body data-theme="auto">
 <header>
     <h1>defont — interactive letter sample</h1>
     <p class="sub">
@@ -330,9 +354,9 @@
                 <div class="left">
                     <button class="btn primary" id="apply">Apply</button>
                     <button class="btn" id="reset">Reset</button>
-                    <button class="btn" id="toggleGlyphs">Glyph table</button>
+                    <button class="btn primary" id="toggleGlyphs">Glyph table</button>
                 </div>
-                <button class="btn" id="toggleTheme">Theme</button>
+                <button class="btn" id="toggleTheme">Theme: Auto</button>
             </div>
 
             <div class="slider">
@@ -381,7 +405,9 @@
         <h2>Preview</h2>
         <div class="stage" id="stage">
             <div class="sample" id="sample"></div>
-            <div class="glyphs" id="glyphs">
+
+            <!-- enabled by default -->
+            <div class="glyphs open" id="glyphs">
                 <div class="glyphbar">
                     <div class="hint">Click a glyph to append it to the sample text.</div>
                     <button class="btn" id="copyAll">Copy sample</button>
@@ -408,7 +434,10 @@
         0x70, 0x71, 0x72, 0x73, 0x74, 0x75, 0x76, 0x77, 0x78, 0x79, 0x7A,
         0xA9,
         0x2019,
-        0x2709
+        0x2626, // ☦
+        0x2628, // ☨
+        0x2709, // ✉
+        0x271D  // ✝
     ];
 
     let AVAILABLE_CODEPOINTS = [...FALLBACK_CODEPOINTS];
@@ -495,9 +524,6 @@
         els.sample.style.fontSize = size + "px";
         els.sample.style.letterSpacing = ls + "px";
         els.sample.style.lineHeight = lh;
-
-        // keep glyph preview in sync, too
-        els.glyphGrid.style.fontSize = Math.max(20, Math.min(48, size * 0.45)) + "px";
     }
 
     function applyText(){
@@ -586,7 +612,7 @@
             let line = "";
             for (let cp = start; cp <= end; cp++){
                 line += toChar(cp);
-                if (line.length > 2000) break; // just in case
+                if (line.length > 4000) break; // just in case
             }
             lines.push(line);
         }
@@ -630,8 +656,6 @@
     }
 
     async function checkFont(){
-        // This checks whether the browser thinks it can load "defont".
-        // If COLR/CPAL isn’t supported, the font may still load but render monochrome fallback shapes.
         try{
             const ok = await document.fonts.load('16px "defont"', "deidee");
             const loaded = ok && ok.length > 0;
@@ -644,9 +668,17 @@
         }
     }
 
+    function updateThemeButton(){
+        const mode = (document.body.getAttribute("data-theme") || "auto").toLowerCase();
+        const label = mode === "dark" ? "Dark" : mode === "light" ? "Light" : "Auto";
+        els.toggleTheme.textContent = `Theme: ${label}`;
+    }
+
     function toggleTheme(){
-        const theme = document.body.getAttribute("data-theme") === "light" ? "dark" : "light";
-        document.body.setAttribute("data-theme", theme);
+        const mode = (document.body.getAttribute("data-theme") || "auto").toLowerCase();
+        const next = mode === "auto" ? "dark" : mode === "dark" ? "light" : "auto";
+        document.body.setAttribute("data-theme", next);
+        updateThemeButton();
     }
 
     function toggleGlyphs(){
@@ -661,6 +693,11 @@
         els.lh.value = 1.05;
         els.pad.value = 18;
         els.systemFallback.checked = false;
+
+        // keep glyph table open by default
+        els.glyphs.classList.add("open");
+        els.toggleGlyphs.classList.add("primary");
+
         applyText();
         applyStyles();
         showToast("Reset");
@@ -672,7 +709,6 @@
             await navigator.clipboard.writeText(txt);
             showToast("Copied sample text");
         }catch{
-            // fallback
             const ta = document.createElement("textarea");
             ta.value = txt;
             document.body.appendChild(ta);
@@ -700,6 +736,7 @@
 
     // Init
     (async function init(){
+        updateThemeButton();
         await loadManifest();
         buildGlyphGrid();
         resetAll();
