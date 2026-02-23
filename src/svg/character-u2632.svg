@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="216" viewBox="0 0 5 9" shape-rendering="crispEdges">
+  <title>U+2632 (☲)</title>
+  
+  <g fill="black">
+    <rect x="0" y="1" width="1" height="1"/>
+    <rect x="1" y="1" width="1" height="1"/>
+    <rect x="2" y="1" width="1" height="1"/>
+    <rect x="3" y="1" width="1" height="1"/>
+    <rect x="4" y="1" width="1" height="1"/>
+    <rect x="0" y="4" width="1" height="1"/>
+    <rect x="1" y="4" width="1" height="1"/>
+    <rect x="3" y="4" width="1" height="1"/>
+    <rect x="4" y="4" width="1" height="1"/>
+    <rect x="0" y="7" width="1" height="1"/>
+    <rect x="1" y="7" width="1" height="1"/>
+    <rect x="2" y="7" width="1" height="1"/>
+    <rect x="3" y="7" width="1" height="1"/>
+    <rect x="4" y="7" width="1" height="1"/>
+  </g>
+</svg>
