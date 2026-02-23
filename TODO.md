@@ -1,6 +1,9 @@
 
 # TODO
 
+- [ ] Check Cyrillic glyphs and fix where necessary.
+- [ ] Check Hebrew glyphs and fix where necessary.
+
 ## Done
 
 - [x] Build font generator tool.
