@@ -2,10 +2,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="72" height="216" viewBox="0 0 3 9" shape-rendering="crispEdges">
   <title>U+0022 (&quot;)</title>
   
-  <g fill="black">
-    <rect x="0" y="0" width="1" height="1"/>
-    <rect x="2" y="0" width="1" height="1"/>
-    <rect x="0" y="1" width="1" height="1"/>
-    <rect x="2" y="1" width="1" height="1"/>
+  <g>
+    <rect x="0" y="0" width="1" height="1" fill="rgb(6,233,37)" fill-opacity="0.500"/>
+    <rect x="2" y="0" width="1" height="1" fill="rgb(35,154,167)" fill-opacity="0.500"/>
+    <rect x="0" y="1" width="1" height="1" fill="rgb(66,176,57)" fill-opacity="0.500"/>
+    <rect x="2" y="1" width="1" height="1" fill="rgb(106,209,126)" fill-opacity="0.500"/>
   </g>
 </svg>

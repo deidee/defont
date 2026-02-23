@@ -13,11 +13,17 @@ Assumptions (matches your glyph designer + chars.php):
 - Fixed ROWS = 9
 - Variable width (cols = len(pixels) / ROWS)
 - Pixels are 0/1 in row-major order
+
+Color modes:
+- solid  : all "on" cells use --fill
+- dejade : each "on" cell gets its own semi-transparent random color:
+           fill(random(0, .5), random(.5, 1), random(0, .75), .5)
 """
 
 from __future__ import annotations
 
 import argparse
+import random
 import re
 import sys
 from dataclasses import dataclass
@@ -45,8 +51,8 @@ def strip_php_comments(src: str) -> str:
     # Remove /* ... */ first
     s = re.sub(r"/\*[\s\S]*?\*/", "", src)
     # Remove //... (line comments)
-    s = re.sub(r"^\s*//.*$", "", s, flags=re.MULTILINE)
-    s = re.sub(r"//.*$", "", s, flags=re.MULTILINE)
+    s = re.sub(r"^\s*\/\/.*$", "", s, flags=re.MULTILINE)
+    s = re.sub(r"\/\/.*$", "", s, flags=re.MULTILINE)
     return s
 
 
@@ -97,7 +103,6 @@ def parse_glyphs_php(path: Path) -> Dict[str, Glyph]:
     lhs = r"(?:\$c|\$data\s*->\s*c)"
 
     # Match: $c[KEY] = array( BODY );
-    # Non-greedy BODY with DOTALL.
     re_assign = re.compile(
         rf"{lhs}\s*\[\s*([^\]]+?)\s*\]\s*=\s*array\s*\(\s*([\s\S]*?)\s*\)\s*;",
         flags=re.MULTILINE,
@@ -121,7 +126,6 @@ def parse_glyphs_php(path: Path) -> Dict[str, Glyph]:
                 cols = 1
             else:
                 if len(px) % ROWS != 0:
-                    # skip invalid glyphs (but warn)
                     print(
                         f"[warn] Skipping U+{cp:04X}: pixel length {len(px)} not divisible by {ROWS}",
                         file=sys.stderr,
@@ -159,25 +163,48 @@ def codepoint_filename(cp: int, uppercase: bool = False) -> str:
     return f"character-u{hx}.svg"
 
 
-def slugify_name(name: str) -> str:
-    # For non-codepoint keys like ".notdef"
-    s = name.strip()
-    if s.startswith("."):
-        s = s[1:]
-    s = s.replace(" ", "-")
-    s = re.sub(r"[^a-zA-Z0-9._-]+", "-", s)
-    s = re.sub(r"-{2,}", "-", s).strip("-")
-    if not s:
-        s = "glyph"
-    return s
+def escape_xml(s: str) -> str:
+    return (
+        str(s)
+        .replace("&", "&amp;")
+        .replace("<", "&lt;")
+        .replace(">", "&gt;")
+        .replace('"', "&quot;")
+        .replace("'", "&apos;")
+    )
+
+
+def clamp01(x: float) -> float:
+    return 0.0 if x < 0.0 else (1.0 if x > 1.0 else x)
+
+
+def dejade_rgba(rng: random.Random, alpha: float) -> Tuple[str, float]:
+    """
+    Implements:
+      fill(random(0, .5), random(.5, 1), random(0, .75), .5)
+    We return SVG-safe: fill="rgb(r,g,b)" + fill-opacity="a"
+    """
+    r = rng.uniform(0.0, 0.5)
+    g = rng.uniform(0.5, 1.0)
+    b = rng.uniform(0.0, 0.75)
+    a = clamp01(alpha)
+
+    ri = int(round(clamp01(r) * 255))
+    gi = int(round(clamp01(g) * 255))
+    bi = int(round(clamp01(b) * 255))
+
+    return f"rgb({ri},{gi},{bi})", a
 
 
 def build_svg(
     glyph: Glyph,
     cell_px: int,
-    fill: str,
+    mode: str,
+    solid_fill: str,
     include_bg: bool,
     bg: str,
+    rng: random.Random,
+    dejade_alpha: float,
 ) -> str:
     cols = glyph.cols
     rows = ROWS
@@ -196,11 +223,22 @@ def build_svg(
                     break
                 if glyph.pixels[i] != 1:
                     continue
-                rects.append(f'<rect x="{c}" y="{r}" width="1" height="1"/>')
+
+                if mode == "dejade":
+                    fill, op = dejade_rgba(rng, dejade_alpha)
+                    rects.append(
+                        f'<rect x="{c}" y="{r}" width="1" height="1" fill="{fill}" fill-opacity="{op:.3f}"/>'
+                    )
+                else:
+                    rects.append(f'<rect x="{c}" y="{r}" width="1" height="1"/>')
 
     title = glyph.key if glyph.codepoint is None else f"{glyph.key} ({chr(glyph.codepoint)})"
     bg_rect = f'<rect x="0" y="0" width="{cols}" height="{rows}" fill="{bg}"/>' if include_bg else ""
-    fg_group = f'<g fill="{fill}">\n    ' + "\n    ".join(rects) + "\n  </g>" if rects else f'<g fill="{fill}"></g>'
+
+    if mode == "dejade":
+        fg = "<g>\n    " + ("\n    ".join(rects) if rects else "") + "\n  </g>"
+    else:
+        fg = f'<g fill="{solid_fill}">\n    ' + ("\n    ".join(rects) if rects else "") + "\n  </g>"
 
     return (
         '<?xml version="1.0" encoding="UTF-8"?>\n'
@@ -210,19 +248,8 @@ def build_svg(
         f'shape-rendering="crispEdges">\n'
         f'  <title>{escape_xml(title)}</title>\n'
         f'  {bg_rect}\n'
-        f'  {fg_group}\n'
+        f'  {fg}\n'
         f"</svg>\n"
-    )
-
-
-def escape_xml(s: str) -> str:
-    return (
-        str(s)
-        .replace("&", "&amp;")
-        .replace("<", "&lt;")
-        .replace(">", "&gt;")
-        .replace('"', "&quot;")
-        .replace("'", "&apos;")
     )
 
 
@@ -243,7 +270,17 @@ def main() -> int:
         help="Output directory (default: src/svg)",
     )
     ap.add_argument("--cell", dest="cell_px", type=int, default=24, help="Preview cell size in px (default: 24)")
-    ap.add_argument("--fill", dest="fill", default="black", help="Fill color for 'on' cells (default: black)")
+
+    ap.add_argument(
+        "--mode",
+        choices=["dejade", "solid"],
+        default="dejade",
+        help="Color mode for active cells (default: dejade)",
+    )
+    ap.add_argument("--fill", dest="fill", default="black", help="Fill color for solid mode (default: black)")
+    ap.add_argument("--dejade-alpha", dest="dejade_alpha", type=float, default=0.5, help="Alpha for dejade mode (default: 0.5)")
+    ap.add_argument("--seed", dest="seed", type=int, default=None, help="Seed for dejade randomness (default: none/random)")
+
     ap.add_argument("--bg", dest="bg", default="white", help="Background color when --with-bg is set (default: white)")
     ap.add_argument("--with-bg", dest="with_bg", action="store_true", help="Include a background rect")
     ap.add_argument("--uppercase", dest="uppercase", action="store_true", help="Uppercase hex in filenames")
@@ -272,6 +309,8 @@ def main() -> int:
             except ValueError:
                 print(f"[warn] Ignoring invalid --only entry: {p}", file=sys.stderr)
 
+    rng = random.Random(args.seed) if args.seed is not None else random.Random()
+
     written = 0
     skipped = 0
 
@@ -283,21 +322,38 @@ def main() -> int:
             continue
 
         filename = codepoint_filename(g.codepoint, uppercase=args.uppercase)
-        svg = build_svg(g, cell_px=args.cell_px, fill=args.fill, include_bg=args.with_bg, bg=args.bg)
+        svg = build_svg(
+            g,
+            cell_px=args.cell_px,
+            mode=args.mode,
+            solid_fill=args.fill,
+            include_bg=args.with_bg,
+            bg=args.bg,
+            rng=rng,
+            dejade_alpha=args.dejade_alpha,
+        )
         (out_dir / filename).write_text(svg, encoding="utf-8")
         written += 1
 
     # Write .notdef (and other named glyphs) if present
     for g in (g for g in glyphs.values() if g.codepoint is None):
-        # keep just .notdef by default; if you want more named glyphs later, remove this guard
         if g.key != ".notdef":
             continue
         name = "character-notdef.svg"
-        svg = build_svg(g, cell_px=args.cell_px, fill=args.fill, include_bg=args.with_bg, bg=args.bg)
+        svg = build_svg(
+            g,
+            cell_px=args.cell_px,
+            mode=args.mode,
+            solid_fill=args.fill,
+            include_bg=args.with_bg,
+            bg=args.bg,
+            rng=rng,
+            dejade_alpha=args.dejade_alpha,
+        )
         (out_dir / name).write_text(svg, encoding="utf-8")
         written += 1
 
-    print(f"[ok] Wrote {written} SVGs to {out_dir}")
+    print(f"[ok] Wrote {written} SVGs to {out_dir} (mode={args.mode}, seed={args.seed})")
     if skipped:
         print(f"[note] Skipped {skipped} (filtered by --only)")
     return 0

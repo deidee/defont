@@ -2,12 +2,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="72" height="216" viewBox="0 0 3 9" shape-rendering="crispEdges">
   <title>U+003D (=)</title>
   
-  <g fill="black">
-    <rect x="0" y="4" width="1" height="1"/>
-    <rect x="1" y="4" width="1" height="1"/>
-    <rect x="2" y="4" width="1" height="1"/>
-    <rect x="0" y="6" width="1" height="1"/>
-    <rect x="1" y="6" width="1" height="1"/>
-    <rect x="2" y="6" width="1" height="1"/>
+  <g>
+    <rect x="0" y="4" width="1" height="1" fill="rgb(110,209,155)" fill-opacity="0.500"/>
+    <rect x="1" y="4" width="1" height="1" fill="rgb(48,156,88)" fill-opacity="0.500"/>
+    <rect x="2" y="4" width="1" height="1" fill="rgb(117,164,131)" fill-opacity="0.500"/>
+    <rect x="0" y="6" width="1" height="1" fill="rgb(30,153,19)" fill-opacity="0.500"/>
+    <rect x="1" y="6" width="1" height="1" fill="rgb(20,156,83)" fill-opacity="0.500"/>
+    <rect x="2" y="6" width="1" height="1" fill="rgb(21,249,109)" fill-opacity="0.500"/>
   </g>
 </svg>

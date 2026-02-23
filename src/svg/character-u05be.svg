@@ -2,9 +2,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="120" height="216" viewBox="0 0 5 9" shape-rendering="crispEdges">
   <title>U+05BE (־)</title>
   
-  <g fill="black">
-    <rect x="1" y="4" width="1" height="1"/>
-    <rect x="2" y="4" width="1" height="1"/>
-    <rect x="3" y="4" width="1" height="1"/>
+  <g>
+    <rect x="1" y="4" width="1" height="1" fill="rgb(57,184,113)" fill-opacity="0.500"/>
+    <rect x="2" y="4" width="1" height="1" fill="rgb(5,171,36)" fill-opacity="0.500"/>
+    <rect x="3" y="4" width="1" height="1" fill="rgb(10,140,130)" fill-opacity="0.500"/>
   </g>
 </svg>

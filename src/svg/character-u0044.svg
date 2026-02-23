@@ -2,20 +2,20 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="72" height="216" viewBox="0 0 3 9" shape-rendering="crispEdges">
   <title>U+0044 (D)</title>
   
-  <g fill="black">
-    <rect x="0" y="0" width="1" height="1"/>
-    <rect x="1" y="0" width="1" height="1"/>
-    <rect x="0" y="1" width="1" height="1"/>
-    <rect x="2" y="1" width="1" height="1"/>
-    <rect x="0" y="2" width="1" height="1"/>
-    <rect x="2" y="2" width="1" height="1"/>
-    <rect x="0" y="3" width="1" height="1"/>
-    <rect x="2" y="3" width="1" height="1"/>
-    <rect x="0" y="4" width="1" height="1"/>
-    <rect x="2" y="4" width="1" height="1"/>
-    <rect x="0" y="5" width="1" height="1"/>
-    <rect x="2" y="5" width="1" height="1"/>
-    <rect x="0" y="6" width="1" height="1"/>
-    <rect x="1" y="6" width="1" height="1"/>
+  <g>
+    <rect x="0" y="0" width="1" height="1" fill="rgb(57,178,110)" fill-opacity="0.500"/>
+    <rect x="1" y="0" width="1" height="1" fill="rgb(46,238,141)" fill-opacity="0.500"/>
+    <rect x="0" y="1" width="1" height="1" fill="rgb(99,182,90)" fill-opacity="0.500"/>
+    <rect x="2" y="1" width="1" height="1" fill="rgb(10,201,51)" fill-opacity="0.500"/>
+    <rect x="0" y="2" width="1" height="1" fill="rgb(17,183,165)" fill-opacity="0.500"/>
+    <rect x="2" y="2" width="1" height="1" fill="rgb(100,187,32)" fill-opacity="0.500"/>
+    <rect x="0" y="3" width="1" height="1" fill="rgb(105,216,126)" fill-opacity="0.500"/>
+    <rect x="2" y="3" width="1" height="1" fill="rgb(77,166,96)" fill-opacity="0.500"/>
+    <rect x="0" y="4" width="1" height="1" fill="rgb(44,138,172)" fill-opacity="0.500"/>
+    <rect x="2" y="4" width="1" height="1" fill="rgb(50,235,83)" fill-opacity="0.500"/>
+    <rect x="0" y="5" width="1" height="1" fill="rgb(16,135,11)" fill-opacity="0.500"/>
+    <rect x="2" y="5" width="1" height="1" fill="rgb(75,164,110)" fill-opacity="0.500"/>
+    <rect x="0" y="6" width="1" height="1" fill="rgb(107,201,160)" fill-opacity="0.500"/>
+    <rect x="1" y="6" width="1" height="1" fill="rgb(8,185,169)" fill-opacity="0.500"/>
   </g>
 </svg>

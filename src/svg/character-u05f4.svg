@@ -2,10 +2,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="120" height="216" viewBox="0 0 5 9" shape-rendering="crispEdges">
   <title>U+05F4 (״)</title>
   
-  <g fill="black">
-    <rect x="1" y="0" width="1" height="1"/>
-    <rect x="3" y="0" width="1" height="1"/>
-    <rect x="1" y="1" width="1" height="1"/>
-    <rect x="3" y="1" width="1" height="1"/>
+  <g>
+    <rect x="1" y="0" width="1" height="1" fill="rgb(34,190,21)" fill-opacity="0.500"/>
+    <rect x="3" y="0" width="1" height="1" fill="rgb(55,140,121)" fill-opacity="0.500"/>
+    <rect x="1" y="1" width="1" height="1" fill="rgb(6,217,100)" fill-opacity="0.500"/>
+    <rect x="3" y="1" width="1" height="1" fill="rgb(85,211,23)" fill-opacity="0.500"/>
   </g>
 </svg>

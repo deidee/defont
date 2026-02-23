@@ -2,9 +2,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="120" height="216" viewBox="0 0 5 9" shape-rendering="crispEdges">
   <title>U+05D9 (י)</title>
   
-  <g fill="black">
-    <rect x="3" y="0" width="1" height="1"/>
-    <rect x="3" y="1" width="1" height="1"/>
-    <rect x="4" y="1" width="1" height="1"/>
+  <g>
+    <rect x="3" y="0" width="1" height="1" fill="rgb(10,135,148)" fill-opacity="0.500"/>
+    <rect x="3" y="1" width="1" height="1" fill="rgb(9,159,51)" fill-opacity="0.500"/>
+    <rect x="4" y="1" width="1" height="1" fill="rgb(51,168,135)" fill-opacity="0.500"/>
   </g>
 </svg>

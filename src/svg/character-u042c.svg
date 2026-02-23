@@ -2,17 +2,17 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="72" height="216" viewBox="0 0 3 9" shape-rendering="crispEdges">
   <title>U+042C (Ь)</title>
   
-  <g fill="black">
-    <rect x="0" y="0" width="1" height="1"/>
-    <rect x="0" y="1" width="1" height="1"/>
-    <rect x="0" y="2" width="1" height="1"/>
-    <rect x="0" y="3" width="1" height="1"/>
-    <rect x="1" y="3" width="1" height="1"/>
-    <rect x="0" y="4" width="1" height="1"/>
-    <rect x="2" y="4" width="1" height="1"/>
-    <rect x="0" y="5" width="1" height="1"/>
-    <rect x="2" y="5" width="1" height="1"/>
-    <rect x="0" y="6" width="1" height="1"/>
-    <rect x="1" y="6" width="1" height="1"/>
+  <g>
+    <rect x="0" y="0" width="1" height="1" fill="rgb(103,129,87)" fill-opacity="0.500"/>
+    <rect x="0" y="1" width="1" height="1" fill="rgb(126,138,7)" fill-opacity="0.500"/>
+    <rect x="0" y="2" width="1" height="1" fill="rgb(117,159,103)" fill-opacity="0.500"/>
+    <rect x="0" y="3" width="1" height="1" fill="rgb(54,146,182)" fill-opacity="0.500"/>
+    <rect x="1" y="3" width="1" height="1" fill="rgb(75,186,78)" fill-opacity="0.500"/>
+    <rect x="0" y="4" width="1" height="1" fill="rgb(68,227,51)" fill-opacity="0.500"/>
+    <rect x="2" y="4" width="1" height="1" fill="rgb(30,206,182)" fill-opacity="0.500"/>
+    <rect x="0" y="5" width="1" height="1" fill="rgb(66,229,95)" fill-opacity="0.500"/>
+    <rect x="2" y="5" width="1" height="1" fill="rgb(54,186,5)" fill-opacity="0.500"/>
+    <rect x="0" y="6" width="1" height="1" fill="rgb(30,246,146)" fill-opacity="0.500"/>
+    <rect x="1" y="6" width="1" height="1" fill="rgb(54,155,51)" fill-opacity="0.500"/>
   </g>
 </svg>
