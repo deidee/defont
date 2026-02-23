@@ -24,12 +24,17 @@
             --cellW: 24px;
             --cellH: 24px;
             --gap: 0px;
-            --gridLine: rgba(255,255,255,.10);
-            --onFill: #0a0a0a;
+
+            /* grid line colors */
+            --gridLineOn: rgba(255,255,255,.16);
+            --gridLineCurrent: var(--gridLineOn);
+
+            /* dark mode editor colors */
+            --onFill: #ffffff;      /* active cells should be visible in dark mode */
             --offFill: #ffffff;
             --offFillDark: #0b0d12;
 
-            --baseline: rgba(125,211,252,.9);
+            --baseline: rgba(125,211,252,.98);
         }
 
         [data-theme="light"]{
@@ -41,11 +46,15 @@
             --border: rgba(0,0,0,.10);
             --accent: #0369a1;
             --shadow: 0 12px 30px rgba(0,0,0,.08);
-            --gridLine: rgba(0,0,0,.10);
-            --onFill: #0b0b0b;
+
+            --gridLineOn: rgba(0,0,0,.12);
+            --gridLineCurrent: var(--gridLineOn);
+
+            --onFill: #0b0b0b;      /* active cells black in light mode */
             --offFill: #ffffff;
             --offFillDark: #ffffff;
-            --baseline: rgba(3,105,161,.9);
+
+            --baseline: rgba(3,105,161,.98);
         }
 
         @media (prefers-color-scheme: light){
@@ -58,11 +67,15 @@
                 --border: rgba(0,0,0,.10);
                 --accent: #0369a1;
                 --shadow: 0 12px 30px rgba(0,0,0,.08);
-                --gridLine: rgba(0,0,0,.10);
+
+                --gridLineOn: rgba(0,0,0,.12);
+                --gridLineCurrent: var(--gridLineOn);
+
                 --onFill: #0b0b0b;
                 --offFill: #ffffff;
                 --offFillDark: #ffffff;
-                --baseline: rgba(3,105,161,.9);
+
+                --baseline: rgba(3,105,161,.98);
             }
         }
 
@@ -267,11 +280,12 @@
         .cell{
             width: var(--cellW);
             height: var(--cellH);
-            border-right: 1px solid var(--gridLine);
-            border-bottom: 1px solid var(--gridLine);
+            border-right: 1px solid var(--gridLineCurrent);
+            border-bottom: 1px solid var(--gridLineCurrent);
             background: var(--offFillDark);
             cursor: pointer;
             position: relative;
+            z-index: 1;
         }
         [data-theme="light"] .cell{ background: var(--offFill); }
         [data-theme="auto"] .cell{ background: var(--offFillDark); }
@@ -282,24 +296,27 @@
         .cell.on{
             background: var(--onFill);
         }
+
         .cell:hover::after{
             content:"";
             position:absolute;
             inset:0;
-            outline: 2px solid rgba(125,211,252,.45);
+            outline: 2px solid rgba(125,211,252,.55);
             outline-offset: -2px;
             pointer-events:none;
         }
 
-        /* baseline guide: thin line above second row from bottom */
+        /* baseline guide: thin blue line above second row from bottom */
         .baselineLine{
             position:absolute;
             left:0; right:0;
             height: 2px;
             background: var(--baseline);
-            opacity: .95;
+            opacity: 1;
             pointer-events:none;
             transform: translateY(-1px);
+            z-index: 20; /* ensure it overlays cells */
+            box-shadow: 0 0 0 1px rgba(0,0,0,.08), 0 0 6px rgba(125,211,252,.35);
         }
 
         /* Right pane previews */
@@ -380,7 +397,7 @@
         <h1>defont — glyph designer</h1>
         <p class="sub">
             9-row variable-width bitmap glyphs. Click/drag to paint. Export as PHP line (for <span class="mono">data/chars.php</span>),
-            JSON, and an SVG preview. Optional: load an existing <span class="mono">chars.php</span> to browse + edit glyphs.
+            JSON, and an SVG preview. Optional: auto-load <span class="mono">../data/chars.php</span> (if served over HTTP), or load one manually.
         </p>
     </div>
     <div class="row" style="margin:0;">
@@ -430,8 +447,8 @@
 
             <label>Import</label>
             <div class="small">
-                Load an existing <span class="mono">data/chars.php</span> to browse and edit.
-                Or paste a PHP <span class="mono">array(...)</span> / comma list below.
+                Auto-load tries <span class="mono">../data/chars.php</span> first (when running via a web server).
+                You can also load a file manually, or paste a PHP <span class="mono">array(...)</span> / comma list below.
             </div>
 
             <div class="fileRow">
@@ -602,7 +619,7 @@
             els.toast.textContent = msg;
             els.toast.classList.add("show");
             window.clearTimeout(showToast._t);
-            showToast._t = window.setTimeout(() => els.toast.classList.remove("show"), 900);
+            showToast._t = window.setTimeout(() => els.toast.classList.remove("show"), 1100);
         }
 
         function toCodepoint(str){
@@ -635,6 +652,8 @@
             const cur = document.body.getAttribute("data-theme") || "auto";
             const nxt = cur === "auto" ? "dark" : (cur === "dark" ? "light" : "auto");
             setTheme(nxt);
+            // keep grid line visibility in sync after theme changes
+            applyGridLines();
             showToast("Theme: " + nxt);
         }
 
@@ -646,8 +665,7 @@
 
         function applyGridLines(){
             const on = !!els.gridToggle.checked;
-            document.documentElement.style.setProperty("--gridLine", on ? "var(--gridLine)" : "transparent");
-            els.grid.style.borderColor = on ? "var(--border)" : "transparent";
+            document.documentElement.style.setProperty("--gridLineCurrent", on ? "var(--gridLineOn)" : "transparent");
         }
 
         function setCols(n){
@@ -825,13 +843,11 @@
             if (baselineOn){
                 const line = document.createElement("div");
                 line.className = "baselineLine";
-                // place at boundary above second row from bottom
                 const cellH = parseInt(getComputedStyle(document.documentElement).getPropertyValue("--cellH"), 10) || 24;
                 line.style.top = ((ROWS - 2) * cellH) + "px";
                 els.grid.appendChild(line);
             }
 
-            // We need cells after baseline; baseline is absolutely positioned anyway.
             for (let r=0;r<ROWS;r++){
                 for (let c=0;c<cols;c++){
                     const i = r*cols + c;
@@ -932,7 +948,6 @@
             if (!isPointerDown) return;
             isPointerDown = false;
             try{ els.grid.releasePointerCapture?.(e.pointerId); }catch{}
-            // full render to ensure baseline layering consistent
             render();
             e.preventDefault();
         }
@@ -957,7 +972,7 @@
         function parseCharsPhp(text){
             // Very forgiving parser:
             // - strips block comments and line comments
-            // - captures $c[KEY] = array(...);
+            // - captures $c[KEY] = array(...); and $data->c[KEY] = array(...);
             // - KEY supports 0x.. or decimal
             const src = String(text || "");
 
@@ -969,13 +984,18 @@
 
             const map = new Map();
 
-            // match $c[ ... ] = array( ... );
-            const re = /\$c\s*\[\s*([^\]]+?)\s*\]\s*=\s*array\s*\(\s*([\s\S]*?)\s*\)\s*;/g;
+            const lhs = String.raw`(?:\$c|\$data\s*->\s*c)`;
+
+            // match $c[...] = array(...); or $data->c[...] = array(...);
+            const re = new RegExp(
+                `${lhs}\\s*\\[\\s*([^\\]]+?)\\s*\\]\\s*=\\s*array\\s*\\(\\s*([\\s\\S]*?)\\s*\\)\\s*;`,
+                "g"
+            );
+
             let match;
             while ((match = re.exec(s)) !== null){
                 const keyRaw = match[1].trim();
 
-                // ignore string keys like '.notdef'
                 let cp = null;
                 if (/^0x[0-9a-f]+$/i.test(keyRaw)){
                     cp = parseInt(keyRaw, 16);
@@ -991,8 +1011,11 @@
                 map.set(cp, arr);
             }
 
-            // also capture $c[0x20] = array(); (empty)
-            const reEmpty = /\$c\s*\[\s*([^\]]+?)\s*\]\s*=\s*array\s*\(\s*\)\s*;/g;
+            // also capture empty arrays
+            const reEmpty = new RegExp(
+                `${lhs}\\s*\\[\\s*([^\\]]+?)\\s*\\]\\s*=\\s*array\\s*\\(\\s*\\)\\s*;`,
+                "g"
+            );
             while ((match = reEmpty.exec(s)) !== null){
                 const keyRaw = match[1].trim();
                 let cp = null;
@@ -1033,7 +1056,7 @@
             if (!arr) return;
 
             if (arr.length === 0){
-                // space
+                // space-like glyph
                 setCols(1);
                 pixels.fill(0);
                 render();
@@ -1051,10 +1074,47 @@
             render();
         }
 
-        function updateLoadStatus(ok, msg){
+        function updateLoadStatus(kind, msg){
             els.loadDot.classList.remove("ok","warn","bad");
-            els.loadDot.classList.add(ok ? "ok" : "warn");
+            if (kind) els.loadDot.classList.add(kind);
             els.loadStatus.textContent = msg;
+        }
+
+        async function tryAutoLoadCharsPhp(){
+            // Most likely path from tools/glyph-designer.html is ../data/chars.php
+            // Also try a couple fallbacks for other setups.
+            const candidates = [
+                "../data/chars.php",
+                "./data/chars.php",
+                "data/chars.php"
+            ];
+
+            for (const path of candidates){
+                try{
+                    const res = await fetch(path, { cache: "no-store" });
+                    if (!res.ok) continue;
+
+                    const text = await res.text();
+                    const map = parseCharsPhp(text);
+                    if (map.size <= 0) continue;
+
+                    loadedMap = map;
+                    populateGlyphSelect(map);
+                    updateLoadStatus("ok", `Auto-loaded ${map.size} glyphs (${path})`);
+
+                    // Auto-load current char if available
+                    const cp = toCodepoint(els.charInput.value);
+                    if (cp != null && map.has(cp)) loadGlyphFromMap(cp);
+
+                    showToast(`Auto-loaded ${map.size} glyphs`);
+                    return true;
+                }catch{
+                    // ignore and try next path
+                }
+            }
+
+            updateLoadStatus("warn", "Auto-load failed (use file picker, or serve via HTTP)");
+            return false;
         }
 
         // Downloads
@@ -1101,7 +1161,8 @@
    - SVG preview
 
 Import:
-- Load your data/chars.php to browse glyphs.
+- Auto-load tries ../data/chars.php (when served via HTTP).
+- Or load your data/chars.php manually.
 - Or paste a PHP array(...) / CSV list into the import box.
 
 Notes:
@@ -1237,13 +1298,12 @@ Notes:
             populateGlyphSelect(map);
 
             if (map.size > 0){
-                updateLoadStatus(true, `Loaded ${map.size} glyphs`);
+                updateLoadStatus("ok", `Loaded ${map.size} glyphs`);
                 showToast(`Loaded ${map.size} glyphs`);
-                // Auto-load current char if possible
                 const cp = toCodepoint(els.charInput.value);
                 if (cp != null && map.has(cp)) loadGlyphFromMap(cp);
             }else{
-                updateLoadStatus(false, "No numeric glyphs found");
+                updateLoadStatus("warn", "No numeric glyphs found");
                 showToast("No glyphs found in file");
             }
         });
@@ -1257,6 +1317,9 @@ Notes:
         setCols(3);
         setCharFromInput();
         render();
+
+        // Try to auto-load ../data/chars.php (best effort)
+        void tryAutoLoadCharsPhp();
     })();
 </script>
 </body>
