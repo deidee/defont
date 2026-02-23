@@ -191,26 +191,6 @@
             overflow: hidden;
         }
 
-        .stage.grid::before{
-            content:"";
-            position:absolute;
-            inset:0;
-            pointer-events:none;
-            background-image:
-                    linear-gradient(to right, rgba(255,255,255,.08) 1px, transparent 1px),
-                    linear-gradient(to bottom, rgba(255,255,255,.08) 1px, transparent 1px);
-            background-size: 24px 24px;
-            opacity: .35;
-            mix-blend-mode: overlay;
-        }
-        [data-theme="light"] .stage.grid::before{
-            background-image:
-                    linear-gradient(to right, rgba(0,0,0,.07) 1px, transparent 1px),
-                    linear-gradient(to bottom, rgba(0,0,0,.07) 1px, transparent 1px);
-            opacity: .5;
-            mix-blend-mode: multiply;
-        }
-
         .sample{
             position: relative;
             z-index: 1;
@@ -334,7 +314,7 @@
 <header>
     <h1>defont — interactive letter sample</h1>
     <p class="sub">
-        Loads <span class="mono">../dist/fonts/defont.woff2</span> (fallback to WOFF/TTF). Adjust spacing + size, and click glyphs to insert.
+        Loads <span class="mono">../dist/fonts/defont.woff2</span> (fallback to WOFF/TTF). Sample text + glyph table are populated from <span class="mono">../data/manifest.json</span>.
     </p>
 </header>
 
@@ -387,7 +367,6 @@
                 <div class="pill"><span id="padVal"></span>px</div>
             </div>
 
-            <label class="tog"><input id="grid" type="checkbox" /> Show grid</label>
             <label class="tog"><input id="systemFallback" type="checkbox" /> Force system font (debug)</label>
 
             <div class="meta" style="margin-top: 12px;">
@@ -416,9 +395,8 @@
 <div class="toast" id="toast"></div>
 
 <script>
-    // Characters present in your provided chars.php
-    // (If you add more later, just extend this list.)
-    const CODEPOINTS = [
+    // Fallback list (used only if ../data/manifest.json cannot be loaded)
+    const FALLBACK_CODEPOINTS = [
         0x20, 0x21, 0x27, 0x2B, 0x2C, 0x2D, 0x2E,
         0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39,
         0x3A, 0x3B, 0x3C, 0x3D, 0x3E, 0x3F,
@@ -433,6 +411,9 @@
         0x2709
     ];
 
+    let AVAILABLE_CODEPOINTS = [...FALLBACK_CODEPOINTS];
+    let DEFAULT_TEXT = "";
+
     const NAMES = new Map([
         [0x20, "space"],
         [0x21, "!"], [0x27, "'"], [0x2B, "+"], [0x2C, ","], [0x2D, "-"], [0x2E, "."],
@@ -441,7 +422,10 @@
         [0x5F, "_"],
         [0xA9, "©"],
         [0x2019, "’"],
-        [0x2709, "✉"]
+        [0x2626, "☦"],
+        [0x2628, "☨"],
+        [0x2709, "✉"],
+        [0x271D, "✝"]
     ]);
 
     const $ = (id) => document.getElementById(id);
@@ -460,7 +444,6 @@
         lsVal: $("lsVal"),
         lhVal: $("lhVal"),
         padVal: $("padVal"),
-        grid: $("grid"),
         systemFallback: $("systemFallback"),
         stage: $("stage"),
         sample: $("sample"),
@@ -472,13 +455,6 @@
         fontStatus: $("fontStatus"),
         charCount: $("charCount"),
     };
-
-    const DEFAULT_TEXT =
-        `deidee
-ABCDEFGHIJKLMNOPQRSTUVWXYZ
-abcdefghijklmnopqrstuvwxyz
-0123456789  @ _ + - = < > ? ! : ; , .
-© ’ ✉`;
 
     function toChar(cp){
         try { return String.fromCodePoint(cp); }
@@ -493,7 +469,11 @@ abcdefghijklmnopqrstuvwxyz
         els.toast.textContent = msg;
         els.toast.classList.add("show");
         window.clearTimeout(showToast._t);
-        showToast._t = window.setTimeout(() => els.toast.classList.remove("show"), 900);
+        showToast._t = window.setTimeout(() => els.toast.classList.remove("show"), 1100);
+    }
+
+    function countCodepoints(str){
+        return [...(str || "")].length;
     }
 
     function applyStyles(){
@@ -516,8 +496,6 @@ abcdefghijklmnopqrstuvwxyz
         els.sample.style.letterSpacing = ls + "px";
         els.sample.style.lineHeight = lh;
 
-        els.stage.classList.toggle("grid", els.grid.checked);
-
         // keep glyph preview in sync, too
         els.glyphGrid.style.fontSize = Math.max(20, Math.min(48, size * 0.45)) + "px";
     }
@@ -525,12 +503,12 @@ abcdefghijklmnopqrstuvwxyz
     function applyText(){
         const t = els.text.value ?? "";
         els.sample.textContent = t;
-        els.charCount.textContent = String(t.length);
+        els.charCount.textContent = String(countCodepoints(t));
     }
 
     function buildGlyphGrid(){
         els.glyphGrid.textContent = "";
-        for (const cp of CODEPOINTS){
+        for (const cp of AVAILABLE_CODEPOINTS){
             const ch = toChar(cp);
 
             const cell = document.createElement("div");
@@ -538,7 +516,7 @@ abcdefghijklmnopqrstuvwxyz
 
             const top = document.createElement("div");
             top.className = "gchar";
-            top.textContent = ch === " " ? "␠" : ch; // visualize space
+            top.textContent = ch === " " ? "␠" : (ch || "�");
 
             const info = document.createElement("div");
             info.className = "ginfo";
@@ -564,6 +542,90 @@ abcdefghijklmnopqrstuvwxyz
             });
 
             els.glyphGrid.appendChild(cell);
+        }
+    }
+
+    function expandUnicodeRanges(unicodeRanges){
+        const out = [];
+        const seen = new Set();
+
+        if (!Array.isArray(unicodeRanges)) return out;
+
+        for (const pair of unicodeRanges){
+            if (!Array.isArray(pair) || pair.length < 2) continue;
+            let [start, end] = pair.map(n => Number(n));
+            if (!Number.isFinite(start) || !Number.isFinite(end)) continue;
+            if (end < start) [start, end] = [end, start];
+
+            for (let cp = start; cp <= end; cp++){
+                if (!seen.has(cp)){
+                    seen.add(cp);
+                    out.push(cp);
+                }
+                // safety guard against pathological manifests
+                if (out.length > 200000) break;
+            }
+            if (out.length > 200000) break;
+        }
+
+        return out;
+    }
+
+    function buildDefaultTextFromUnicodeRanges(unicodeRanges){
+        if (!Array.isArray(unicodeRanges) || unicodeRanges.length === 0){
+            return buildDefaultTextFromCodepoints(AVAILABLE_CODEPOINTS);
+        }
+
+        const lines = [];
+        for (const pair of unicodeRanges){
+            if (!Array.isArray(pair) || pair.length < 2) continue;
+            let [start, end] = pair.map(n => Number(n));
+            if (!Number.isFinite(start) || !Number.isFinite(end)) continue;
+            if (end < start) [start, end] = [end, start];
+
+            let line = "";
+            for (let cp = start; cp <= end; cp++){
+                line += toChar(cp);
+                if (line.length > 2000) break; // just in case
+            }
+            lines.push(line);
+        }
+
+        return lines.join("\n");
+    }
+
+    function buildDefaultTextFromCodepoints(codepoints){
+        return (codepoints || []).map(cp => toChar(cp)).join("");
+    }
+
+    async function loadManifest(){
+        // Note: if opened directly as file://, fetch may fail (browser security).
+        // In that case we keep the fallback list.
+        const url = `../data/manifest.json?v=${Date.now()}`;
+
+        try{
+            const res = await fetch(url, { cache: "no-store" });
+            if (!res.ok){
+                throw new Error(`HTTP ${res.status}`);
+            }
+
+            const manifest = await res.json();
+            const cps = expandUnicodeRanges(manifest?.unicodeRanges);
+
+            if (!cps.length){
+                throw new Error("manifest has no usable unicodeRanges");
+            }
+
+            AVAILABLE_CODEPOINTS = cps;
+            DEFAULT_TEXT = buildDefaultTextFromUnicodeRanges(manifest.unicodeRanges);
+
+            showToast(`Loaded ${cps.length} codepoints from manifest`);
+        }catch(err){
+            AVAILABLE_CODEPOINTS = [...FALLBACK_CODEPOINTS];
+            DEFAULT_TEXT = buildDefaultTextFromCodepoints(AVAILABLE_CODEPOINTS);
+
+            console.warn("Manifest load failed; using fallback codepoint list.", err);
+            showToast("Manifest not loaded; using fallback list");
         }
     }
 
@@ -598,7 +660,6 @@ abcdefghijklmnopqrstuvwxyz
         els.ls.value = 2;
         els.lh.value = 1.05;
         els.pad.value = 18;
-        els.grid.checked = false;
         els.systemFallback.checked = false;
         applyText();
         applyStyles();
@@ -632,16 +693,18 @@ abcdefghijklmnopqrstuvwxyz
     for (const r of [els.size, els.ls, els.lh, els.pad]){
         r.addEventListener("input", () => { applyStyles(); });
     }
-    els.grid.addEventListener("change", applyStyles);
     els.systemFallback.addEventListener("change", applyStyles);
 
     // Live update text while typing
     els.text.addEventListener("input", applyText);
 
     // Init
-    resetAll();
-    buildGlyphGrid();
-    checkFont();
+    (async function init(){
+        await loadManifest();
+        buildGlyphGrid();
+        resetAll();
+        checkFont();
+    })();
 </script>
 </body>
 </html>
