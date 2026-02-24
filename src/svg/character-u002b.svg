@@ -3,10 +3,10 @@
   <title>U+002B (+)</title>
   
   <g>
-    <rect x="1" y="4" width="1" height="1" fill="rgb(69,130,166)" fill-opacity="0.500"/>
-    <rect x="0" y="5" width="1" height="1" fill="rgb(116,175,68)" fill-opacity="0.500"/>
-    <rect x="1" y="5" width="1" height="1" fill="rgb(64,216,109)" fill-opacity="0.500"/>
-    <rect x="2" y="5" width="1" height="1" fill="rgb(62,217,167)" fill-opacity="0.500"/>
-    <rect x="1" y="6" width="1" height="1" fill="rgb(125,188,172)" fill-opacity="0.500"/>
+    <rect x="1" y="4" width="1" height="1" fill="rgb(69,234,132)" fill-opacity="0.500"/>
+    <rect x="0" y="5" width="1" height="1" fill="rgb(82,146,112)" fill-opacity="0.500"/>
+    <rect x="1" y="5" width="1" height="1" fill="rgb(38,129,29)" fill-opacity="0.500"/>
+    <rect x="2" y="5" width="1" height="1" fill="rgb(98,183,58)" fill-opacity="0.500"/>
+    <rect x="1" y="6" width="1" height="1" fill="rgb(81,193,143)" fill-opacity="0.500"/>
   </g>
 </svg>

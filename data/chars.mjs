@@ -4,7 +4,7 @@
 export const charsData = {
   "format": "deidee-chars",
   "version": 1,
-  "generated_at": "2026-02-24T16:43:10.664244+00:00",
+  "generated_at": "2026-02-24T20:34:39.043547+00:00",
   "source": "C:/xampp/htdocs/deidee/defont/data/chars.php",
   "meta": {
     "glyph_count": 162,
@@ -8220,7 +8220,7 @@ export const charsData = {
         0,
         1,
         1,
-        1,
+        0,
         0,
         1,
         1,
@@ -8228,7 +8228,7 @@ export const charsData = {
         1,
         1,
         1,
-        0,
+        1,
         0,
         1,
         1,
@@ -8261,7 +8261,7 @@ export const charsData = {
         ],
         [
           1,
-          1,
+          0,
           0,
           1
         ],
@@ -8273,7 +8273,7 @@ export const charsData = {
         ],
         [
           1,
-          0,
+          1,
           0,
           1
         ],
@@ -8328,17 +8328,17 @@ export const charsData = {
         1,
         1,
         0,
-        1,
+        0,
+        0,
         0,
         0,
         1,
-        1,
-        1,
         0,
         1,
         1,
-        0,
         1,
+        1,
+        0,
         1,
         1,
         0,
@@ -8369,21 +8369,21 @@ export const charsData = {
           0
         ],
         [
+          0,
+          0,
+          0,
+          0
+        ],
+        [
           1,
           0,
-          0,
+          1,
           1
         ],
         [
           1,
           1,
           0,
-          1
-        ],
-        [
-          1,
-          0,
-          1,
           1
         ],
         [
@@ -8417,7 +8417,7 @@ export const charsData = {
           0
         ]
       ],
-      "active_pixels": 16,
+      "active_pixels": 14,
       "bbox": {
         "x": 0,
         "y": 0,
@@ -10053,9 +10053,6 @@ export const charsData = {
       "data": [
         1,
         1,
-        1,
-        0,
-        1,
         0,
         0,
         0,
@@ -10064,10 +10061,7 @@ export const charsData = {
         0,
         0,
         1,
-        1,
-        1,
         0,
-        1,
         0,
         0,
         1,
@@ -10075,7 +10069,13 @@ export const charsData = {
         0,
         0,
         1,
+        0,
         1,
+        0,
+        1,
+        0,
+        1,
+        0,
         1,
         1,
         0,
@@ -10092,41 +10092,41 @@ export const charsData = {
         [
           1,
           1,
-          1,
-          0
-        ],
-        [
-          1,
-          0,
           0,
           0
         ],
         [
-          1,
           0,
+          1,
           0,
           0
         ],
         [
+          0,
           1,
+          0,
+          0
+        ],
+        [
+          0,
           1,
           1,
           0
         ],
         [
-          1,
           0,
+          1,
           0,
           1
         ],
         [
-          1,
           0,
+          1,
           0,
           1
         ],
         [
-          1,
+          0,
           1,
           1,
           0
@@ -10144,7 +10144,7 @@ export const charsData = {
           0
         ]
       ],
-      "active_pixels": 15,
+      "active_pixels": 12,
       "bbox": {
         "x": 0,
         "y": 0,
@@ -10161,7 +10161,7 @@ export const charsData = {
       "height": 9,
       "data": [
         1,
-        1,
+        0,
         0,
         0,
         1,
@@ -10209,7 +10209,7 @@ export const charsData = {
       "rows": [
         [
           1,
-          1,
+          0,
           0,
           0,
           1
@@ -10271,7 +10271,7 @@ export const charsData = {
           0
         ]
       ],
-      "active_pixels": 19,
+      "active_pixels": 18,
       "bbox": {
         "x": 0,
         "y": 0,
@@ -10375,30 +10375,39 @@ export const charsData = {
     },
     "1069": {
       "key": 1069,
-      "width": 3,
+      "width": 4,
       "height": 9,
       "data": [
         1,
         1,
         1,
-        0,
-        0,
         1,
         0,
         0,
-        1,
-        1,
-        1,
-        1,
-        1,
         0,
         1,
+        0,
+        0,
+        0,
         1,
         0,
         1,
         1,
         1,
+        0,
+        0,
+        0,
         1,
+        0,
+        0,
+        0,
+        1,
+        1,
+        1,
+        1,
+        1,
+        0,
+        0,
         0,
         0,
         0,
@@ -10410,14 +10419,35 @@ export const charsData = {
         [
           1,
           1,
+          1,
           1
         ],
         [
           0,
           0,
+          0,
           1
         ],
         [
+          0,
+          0,
+          0,
+          1
+        ],
+        [
+          0,
+          1,
+          1,
+          1
+        ],
+        [
+          0,
+          0,
+          0,
+          1
+        ],
+        [
+          0,
           0,
           0,
           1
@@ -10425,29 +10455,17 @@ export const charsData = {
         [
           1,
           1,
+          1,
           1
         ],
         [
-          1,
           0,
-          1
-        ],
-        [
-          1,
-          0,
-          1
-        ],
-        [
-          1,
-          1,
-          1
-        ],
-        [
           0,
           0,
           0
         ],
         [
+          0,
           0,
           0,
           0
@@ -10457,7 +10475,7 @@ export const charsData = {
       "bbox": {
         "x": 0,
         "y": 0,
-        "width": 3,
+        "width": 4,
         "height": 7
       },
       "codepoint": 1069,
