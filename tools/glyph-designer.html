@@ -28,10 +28,10 @@
             --gridLine: rgba(255,255,255,.10);
             --gridLineColor: var(--gridLine);
 
-            /* IMPORTANT: dark mode needs "on" to be visible */
-            --onFill: #f8fafc;   /* active pixels */
-            --offFill: #ffffff;  /* light mode off */
-            --offFillDark: #0b0d12; /* dark mode off */
+            /* dark mode needs "on" to be visible */
+            --onFill: #f8fafc;
+            --offFill: #ffffff;
+            --offFillDark: #0b0d12;
 
             --baseline: rgba(125,211,252,.95);
         }
@@ -49,7 +49,7 @@
             --gridLine: rgba(0,0,0,.10);
             --gridLineColor: var(--gridLine);
 
-            --onFill: #0b0b0b;    /* active pixels in light mode */
+            --onFill: #0b0b0b;
             --offFill: #ffffff;
             --offFillDark: #ffffff;
 
@@ -265,8 +265,8 @@
         .grid{
             display:grid;
             gap: var(--gap);
-            border-radius: 16px;
-            border: 1px solid var(--border); /* keep outer border always */
+            border-radius: 0;            /* <- no rounded corners */
+            border: 1px solid var(--border);
             background: var(--panel2);
             overflow:hidden;
             width: fit-content;
@@ -304,7 +304,6 @@
             pointer-events:none;
         }
 
-        /* baseline guide: thin blue line above second row from bottom */
         .baselineLine{
             position:absolute;
             left:0; right:0;
@@ -313,7 +312,7 @@
             opacity: 1;
             pointer-events:none;
             transform: translateY(-1px);
-            z-index: 10; /* make sure it's above cells */
+            z-index: 10;
         }
 
         /* Right pane previews */
@@ -394,7 +393,7 @@
         <h1>defont — glyph designer</h1>
         <p class="sub">
             9-row variable-width bitmap glyphs. Click/drag to paint. Export as PHP line (for <span class="mono">data/glyphs.php</span>),
-            JSON, and an SVG preview. Optional: load existing glyphs from <span class="mono">data/chars.json</span> to browse + edit.
+            JSON, and an SVG preview. Auto-loads <span class="mono">../data/chars.json</span> (when served over HTTP).
         </p>
     </div>
     <div class="row" style="margin:0;">
@@ -444,12 +443,8 @@
 
             <label>Import</label>
             <div class="small">
-                Load <span class="mono">data/chars.json</span> to browse and edit.
-                Or paste a PHP <span class="mono">array(...)</span> / comma list below.
-            </div>
-
-            <div class="row">
-                <button class="btn primary" id="loadDefaultJson">Load ../data/chars.json</button>
+                Loads <span class="mono">../data/chars.json</span> automatically.
+                If you want, you can also load another file manually:
             </div>
 
             <div class="fileRow">
@@ -469,7 +464,7 @@
             </div>
 
             <div class="meta">
-                <span class="badge"><span class="dot" id="loadDot"></span><span id="loadStatus">No chars.json loaded</span></span>
+                <span class="badge"><span class="dot" id="loadDot"></span><span id="loadStatus">Loading ../data/chars.json…</span></span>
             </div>
         </div>
     </section>
@@ -593,7 +588,6 @@
             downloadJson: $("downloadJson"),
 
             charsJsonFile: $("charsJsonFile"),
-            loadDefaultJson: $("loadDefaultJson"),
             glyphSelect: $("glyphSelect"),
             importText: $("importText"),
             importBtn: $("importBtn"),
@@ -611,6 +605,7 @@
         let isPointerDown = false;
         let paintValue = 1;
         let svgBgOn = false;
+        let lastPaintedIdx = -1;
 
         // loaded glyphs (from chars.json)
         /** @type {Map<number, number[]>} */
@@ -628,7 +623,6 @@
         }
 
         function toCodepoint(str){
-            // allow space
             if (str === "") return null;
             const cp = str.codePointAt(0);
             return (typeof cp === "number") ? cp : null;
@@ -668,8 +662,8 @@
 
         function applyGridLines(){
             const on = !!els.gridToggle.checked;
-            // Toggle ONLY internal lines (not the outer border)
-            document.documentElement.style.setProperty("--gridLineColor", on ? "var(--gridLine)" : "transparent");
+            // set on the grid element so theme variables on <body> don't override it
+            els.grid.style.setProperty("--gridLineColor", on ? "var(--gridLine)" : "transparent");
         }
 
         function setCols(n){
@@ -678,7 +672,6 @@
             els.colsInput.value = String(cols);
 
             const next = new Array(ROWS * cols).fill(0);
-            // copy overlap region
             const oldCols = Math.max(1, Math.floor(pixels.length / ROWS));
             const minCols = Math.min(oldCols, cols);
             for (let r=0;r<ROWS;r++){
@@ -691,7 +684,6 @@
         }
 
         function trimCols(){
-            // remove trailing empty columns
             let lastNonEmpty = -1;
             for (let c=cols-1; c>=0; c--){
                 let any = false;
@@ -705,15 +697,8 @@
             showToast("Trimmed to " + newCols + " cols");
         }
 
-        function clearAll(){
-            pixels.fill(0);
-            render();
-        }
-
-        function invertAll(){
-            for (let i=0;i<pixels.length;i++) pixels[i] = pixels[i] ? 0 : 1;
-            render();
-        }
+        function clearAll(){ pixels.fill(0); render(); }
+        function invertAll(){ for (let i=0;i<pixels.length;i++) pixels[i] = pixels[i] ? 0 : 1; render(); }
 
         function shift(dx, dy){
             const next = new Array(ROWS * cols).fill(0);
@@ -731,8 +716,9 @@
 
         function setCell(r, c, v){
             const i = r*cols + c;
-            if (pixels[i] === v) return;
+            if (pixels[i] === v) return false;
             pixels[i] = v;
+            return true;
         }
 
         function onCount(){
@@ -752,7 +738,6 @@
             const cp = toCodepoint(ch);
             if (cp == null) return "";
 
-            // Optional: if it's exactly space and all zeros, show empty array like original.
             const allZero = pixels.every(v => v === 0);
             if (cp === 0x20 && allZero){
                 return `$c[0x20] = array(); //[SPACE]`;
@@ -782,7 +767,7 @@
         }
 
         function buildSvg(){
-            const cellPx = 24; // preview scale in px
+            const cellPx = 24;
             const w = cols * cellPx;
             const h = ROWS * cellPx;
 
@@ -790,9 +775,7 @@
             for (let r=0;r<ROWS;r++){
                 for (let c=0;c<cols;c++){
                     if (pixels[r*cols + c] !== 1) continue;
-                    const x = c * cellPx;
-                    const y = r * cellPx;
-                    rects.push(`<rect x="${x}" y="${y}" width="${cellPx}" height="${cellPx}" />`);
+                    rects.push(`<rect x="${c*cellPx}" y="${r*cellPx}" width="${cellPx}" height="${cellPx}" />`);
                 }
             }
 
@@ -837,7 +820,7 @@
             els.grid.style.gridTemplateColumns = `repeat(${cols}, var(--cellW))`;
             els.grid.textContent = "";
 
-            // baseline: above second row from bottom => boundary between row 6 and 7 (0-index)
+            // baseline: boundary above second row from bottom
             const baselineOn = !!els.baselineToggle.checked;
             if (baselineOn){
                 const line = document.createElement("div");
@@ -875,10 +858,8 @@
             els.codepointHex.textContent = cp == null ? "-" : fmtHex(cp);
             els.codepointDec.textContent = cp == null ? "-" : String(cp);
 
-            // If we loaded chars.json and it has this cp, load it automatically.
             if (cp != null && loadedMap.has(cp)){
                 loadGlyphFromCp(cp);
-                showToast("Loaded from chars.json");
                 return;
             }
 
@@ -886,24 +867,38 @@
         }
 
         // Drag paint logic
-        function cellFromEvent(e){
+        function cellElFromPointerEvent(e){
+            // With pointer capture, e.target may be the grid; use elementFromPoint.
+            const elUnder = document.elementFromPoint(e.clientX, e.clientY);
+            if (elUnder instanceof HTMLElement){
+                const cell = elUnder.classList.contains("cell") ? elUnder : elUnder.closest(".cell");
+                if (cell instanceof HTMLElement) return cell;
+            }
+            // fallback to direct target if needed
             const t = e.target;
-            if (!(t instanceof HTMLElement)) return null;
-            if (!t.classList.contains("cell")) return null;
-            const r = parseInt(t.dataset.r, 10);
-            const c = parseInt(t.dataset.c, 10);
-            if (!Number.isFinite(r) || !Number.isFinite(c)) return null;
-            return { el: t, r, c };
+            if (t instanceof HTMLElement && t.classList.contains("cell")) return t;
+            return null;
         }
 
         function baselineVisible(){
             return !!els.baselineToggle.checked;
         }
 
-        function applyPaintAt(r, c){
-            setCell(r, c, paintValue);
+        function applyPaintAtCellEl(cellEl){
+            const r = parseInt(cellEl.dataset.r, 10);
+            const c = parseInt(cellEl.dataset.c, 10);
+            if (!Number.isFinite(r) || !Number.isFinite(c)) return;
+
             const idx = r*cols + c;
-            const nodeIndex = baselineVisible() ? (1 + idx) : idx; // baselineLine inserted first
+            if (idx === lastPaintedIdx) return;
+
+            const changed = setCell(r, c, paintValue);
+            lastPaintedIdx = idx;
+
+            if (!changed) return;
+
+            // Update only this cell (baseline is child[0] if visible)
+            const nodeIndex = baselineVisible() ? (1 + idx) : idx;
             const child = els.grid.children[nodeIndex];
             if (child && child.classList){
                 child.classList.toggle("on", pixels[idx] === 1);
@@ -911,16 +906,21 @@
         }
 
         function onPointerDown(e){
-            const cell = cellFromEvent(e);
-            if (!cell) return;
+            const cellEl = cellElFromPointerEvent(e);
+            if (!cellEl) return;
 
             isPointerDown = true;
+            lastPaintedIdx = -1;
             els.grid.setPointerCapture?.(e.pointerId);
 
-            const idx = cell.r*cols + cell.c;
+            const r = parseInt(cellEl.dataset.r, 10);
+            const c = parseInt(cellEl.dataset.c, 10);
+            const idx = r*cols + c;
+
+            // if starting cell is on -> erase; else paint
             paintValue = pixels[idx] ? 0 : 1;
 
-            applyPaintAt(cell.r, cell.c);
+            applyPaintAtCellEl(cellEl);
             updateMeta();
             refreshOutputs();
             e.preventDefault();
@@ -930,10 +930,10 @@
             if (!isPointerDown) return;
             if (!els.dragMode.checked) return;
 
-            const cell = cellFromEvent(e);
-            if (!cell) return;
+            const cellEl = cellElFromPointerEvent(e);
+            if (!cellEl) return;
 
-            applyPaintAt(cell.r, cell.c);
+            applyPaintAtCellEl(cellEl);
             updateMeta();
             refreshOutputs();
             e.preventDefault();
@@ -942,6 +942,7 @@
         function onPointerUp(e){
             if (!isPointerDown) return;
             isPointerDown = false;
+            lastPaintedIdx = -1;
             try{ els.grid.releasePointerCapture?.(e.pointerId); }catch{}
             render();
             e.preventDefault();
@@ -958,28 +959,21 @@
 
             const nums = body.match(/[01]/g);
             if (!nums) return [];
-
             return nums.map(ch => ch === "1" ? 1 : 0);
         }
 
         // chars.json parsing
-        function isNumericString(k){
-            return /^[0-9]+$/.test(k);
-        }
+        function isNumericString(k){ return /^[0-9]+$/.test(k); }
 
         function parseCharsJson(text){
             const obj = JSON.parse(String(text || ""));
             if (!obj || typeof obj !== "object") throw new Error("Invalid JSON");
 
-            // expected: { format, version, meta, glyphs: { ... } }
             const glyphs = obj.glyphs;
             if (!glyphs || typeof glyphs !== "object") throw new Error("Missing top-level 'glyphs' object");
 
-            /** @type {Map<number, number[]>} */
             const byCp = new Map();
-            /** @type {Map<string, number[]>} */
             const named = new Map();
-
             const keysInOrder = Array.isArray(obj?.meta?.keys_in_order) ? obj.meta.keys_in_order.map(String) : [];
 
             for (const [kRaw, g] of Object.entries(glyphs)){
@@ -987,7 +981,6 @@
                 const gg = (g && typeof g === "object") ? g : null;
                 if (!gg) continue;
 
-                // pick pixel array: prefer "data", else "pixels", else flatten "rows"
                 let arr = [];
                 if (Array.isArray(gg.data)) arr = gg.data.slice();
                 else if (Array.isArray(gg.pixels)) arr = gg.pixels.slice();
@@ -997,25 +990,20 @@
                     }
                 }
 
-                // normalize to ints 0/1
                 const px = arr.map(v => (v ? 1 : 0));
 
-                // named glyph
                 if (k === ".notdef" || (gg.codepoint == null && !isNumericString(k))){
                     named.set(k, px);
                     continue;
                 }
 
-                // codepoint glyph
                 let cp = null;
                 if (typeof gg.codepoint === "number" && Number.isFinite(gg.codepoint)) cp = gg.codepoint;
                 else if (isNumericString(k)) cp = parseInt(k, 10);
 
                 if (cp == null || !Number.isFinite(cp)) continue;
 
-                // accept empty array (space)
                 if (px.length > 0 && (px.length % ROWS) !== 0){
-                    // If width/height exist, we could try to recover, but for this format it should be divisible by 9.
                     console.warn("Skipping glyph with invalid length:", cp, px.length);
                     continue;
                 }
@@ -1023,11 +1011,7 @@
                 byCp.set(cp, px);
             }
 
-            return {
-                byCp,
-                named,
-                keysInOrder
-            };
+            return { byCp, named, keysInOrder };
         }
 
         function populateGlyphSelect(){
@@ -1038,7 +1022,6 @@
             opt0.textContent = "(select glyph)";
             els.glyphSelect.appendChild(opt0);
 
-            // Use meta.keys_in_order if present; otherwise: .notdef first, then numeric sorted
             const list = loadedOrder.length
                 ? loadedOrder.slice()
                 : [
@@ -1049,7 +1032,6 @@
             for (const key of list){
                 if (key === ".notdef" && !loadedNamed.has(".notdef")) continue;
 
-                // numeric codepoint entry?
                 if (isNumericString(key)){
                     const cp = parseInt(key, 10);
                     if (!Number.isFinite(cp) || !loadedMap.has(cp)) continue;
@@ -1062,7 +1044,6 @@
                     continue;
                 }
 
-                // named entry
                 if (loadedNamed.has(key)){
                     const opt = document.createElement("option");
                     opt.value = key;
@@ -1098,12 +1079,14 @@
             const arr = loadedMap.get(cp);
             if (!arr) return;
             loadGlyphPixelsArray(arr);
+            showToast("Loaded from chars.json");
         }
 
         function loadGlyphFromNamed(name){
             const arr = loadedNamed.get(name);
             if (!arr) return;
             loadGlyphPixelsArray(arr);
+            showToast(`Loaded ${name}`);
         }
 
         function updateLoadStatus(ok, msg){
@@ -1153,7 +1136,6 @@
                 const total = loadedMap.size + loadedNamed.size;
                 if (total > 0){
                     updateLoadStatus(true, `Loaded ${total} glyphs (${label})`);
-                    showToast(`Loaded ${total} glyphs`);
                     // Auto-load current char if possible
                     const cp = toCodepoint(els.charInput.value);
                     if (cp != null && loadedMap.has(cp)) loadGlyphFromCp(cp);
@@ -1168,7 +1150,21 @@
             }
         }
 
-        // Wire up events
+        async function autoLoadDefaultJson(){
+            const url = "../data/chars.json";
+            try{
+                const res = await fetch(url, {cache: "no-store"});
+                if (!res.ok) throw new Error(String(res.status));
+                const text = await res.text();
+                await loadJsonText(text, url);
+            }catch (e){
+                console.error(e);
+                updateLoadStatus(false, `Couldn't fetch ${url} (serve via http://localhost/...)`);
+                showToast(`Couldn't load ${url}`);
+            }
+        }
+
+        // Events
         els.themeBtn.addEventListener("click", cycleTheme);
 
         els.helpBtn.addEventListener("click", () => {
@@ -1184,7 +1180,8 @@
    - SVG preview
 
 Import:
-- Load ../data/chars.json (button) or choose a chars.json file to browse glyphs.
+- Auto-loads ../data/chars.json (when served over HTTP).
+- You can also load another chars.json via the file input.
 - Or paste a PHP array(...) / CSV list into the import box.
 
 Notes:
@@ -1211,42 +1208,24 @@ Notes:
         els.dragMode.addEventListener("change", () => showToast(els.dragMode.checked ? "Drag paint on" : "Drag paint off"));
 
         els.grid.addEventListener("pointerdown", onPointerDown);
-        window.addEventListener("pointermove", onPointerMove, {passive:false});
+        els.grid.addEventListener("pointermove", onPointerMove, {passive:false});
         window.addEventListener("pointerup", onPointerUp);
 
-        els.copyPhp.addEventListener("click", async () => {
-            await copy(els.phpOut.value);
-            showToast("Copied PHP line");
-        });
-
+        els.copyPhp.addEventListener("click", async () => { await copy(els.phpOut.value); showToast("Copied PHP line"); });
         els.copyHex.addEventListener("click", async () => {
             const cp = toCodepoint(els.charInput.value);
             await copy(cp == null ? "" : fmtHex(cp));
             showToast("Copied codepoint");
         });
-
         els.copyArrayOnly.addEventListener("click", async () => {
             const s = els.phpOut.value;
             const m = s.match(/array\s*\([\s\S]*\)/i);
             await copy(m ? m[0] : s);
             showToast("Copied array(...)");
         });
-
-        els.copyJson.addEventListener("click", async () => {
-            await copy(els.jsonOut.value);
-            showToast("Copied JSON");
-        });
-
-        els.copyPixels.addEventListener("click", async () => {
-            await copy(JSON.stringify(pixels));
-            showToast("Copied pixels[]");
-        });
-
-        els.copySvg.addEventListener("click", async () => {
-            const svg = buildSvg();
-            await copy(svg);
-            showToast("Copied SVG");
-        });
+        els.copyJson.addEventListener("click", async () => { await copy(els.jsonOut.value); showToast("Copied JSON"); });
+        els.copyPixels.addEventListener("click", async () => { await copy(JSON.stringify(pixels)); showToast("Copied pixels[]"); });
+        els.copySvg.addEventListener("click", async () => { await copy(buildSvg()); showToast("Copied SVG"); });
 
         els.toggleSvgBg.addEventListener("click", () => {
             svgBgOn = !svgBgOn;
@@ -1274,10 +1253,7 @@ Notes:
 
         els.importBtn.addEventListener("click", () => {
             const arr = parsePixelsFromText(els.importText.value);
-            if (arr == null){
-                showToast("Nothing to import");
-                return;
-            }
+            if (arr == null){ showToast("Nothing to import"); return; }
             if (arr.length === 0){
                 setCols(1);
                 pixels.fill(0);
@@ -1285,10 +1261,7 @@ Notes:
                 showToast("Imported empty (space-like)");
                 return;
             }
-            if (arr.length % ROWS !== 0){
-                showToast("Import length must be divisible by 9");
-                return;
-            }
+            if (arr.length % ROWS !== 0){ showToast("Import length must be divisible by 9"); return; }
             const newCols = Math.max(1, arr.length / ROWS);
             cols = newCols;
             els.colsInput.value = String(cols);
@@ -1297,23 +1270,17 @@ Notes:
             showToast("Imported");
         });
 
-        els.copyImportHint.addEventListener("click", async () => {
-            await copy(els.phpOut.value);
-            showToast("Copied current PHP line");
-        });
+        els.copyImportHint.addEventListener("click", async () => { await copy(els.phpOut.value); showToast("Copied current PHP line"); });
 
         els.glyphSelect.addEventListener("change", () => {
             const v = els.glyphSelect.value;
             if (!v) return;
 
-            // named glyph
             if (!isNumericString(v)){
                 loadGlyphFromNamed(v);
-                showToast(`Loaded ${v}`);
                 return;
             }
 
-            // codepoint glyph
             const cp = parseInt(v, 10);
             if (!Number.isFinite(cp)) return;
 
@@ -1330,21 +1297,6 @@ Notes:
             await loadJsonText(text, file.name);
         });
 
-        els.loadDefaultJson.addEventListener("click", async () => {
-            // tools/glyph-designer.html -> ../data/chars.json
-            const url = "../data/chars.json";
-            try{
-                const res = await fetch(url, {cache: "no-store"});
-                if (!res.ok) throw new Error(String(res.status));
-                const text = await res.text();
-                await loadJsonText(text, url);
-            }catch (e){
-                console.error(e);
-                updateLoadStatus(false, `Failed to fetch ${url}`);
-                showToast(`Couldn't load ${url}`);
-            }
-        });
-
         // Init
         const savedTheme = localStorage.getItem("defontGlyphTheme");
         if (savedTheme) setTheme(savedTheme);
@@ -1354,6 +1306,9 @@ Notes:
         setCols(3);
         setCharFromInput();
         render();
+
+        // auto-load JSON on page load
+        autoLoadDefaultJson();
     })();
 </script>
 </body>
