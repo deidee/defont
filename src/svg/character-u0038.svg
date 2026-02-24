@@ -3,22 +3,22 @@
   <title>U+0038 (8)</title>
   
   <g>
-    <rect x="0" y="0" width="1" height="1" fill="rgb(119,189,132)" fill-opacity="0.500"/>
-    <rect x="1" y="0" width="1" height="1" fill="rgb(119,242,117)" fill-opacity="0.500"/>
-    <rect x="2" y="0" width="1" height="1" fill="rgb(24,245,25)" fill-opacity="0.500"/>
-    <rect x="0" y="1" width="1" height="1" fill="rgb(63,170,90)" fill-opacity="0.500"/>
-    <rect x="2" y="1" width="1" height="1" fill="rgb(107,176,97)" fill-opacity="0.500"/>
-    <rect x="0" y="2" width="1" height="1" fill="rgb(39,185,74)" fill-opacity="0.500"/>
-    <rect x="2" y="2" width="1" height="1" fill="rgb(9,216,123)" fill-opacity="0.500"/>
-    <rect x="0" y="3" width="1" height="1" fill="rgb(65,177,139)" fill-opacity="0.500"/>
-    <rect x="1" y="3" width="1" height="1" fill="rgb(112,146,100)" fill-opacity="0.500"/>
-    <rect x="2" y="3" width="1" height="1" fill="rgb(29,149,176)" fill-opacity="0.500"/>
-    <rect x="0" y="4" width="1" height="1" fill="rgb(57,140,111)" fill-opacity="0.500"/>
-    <rect x="2" y="4" width="1" height="1" fill="rgb(39,138,118)" fill-opacity="0.500"/>
-    <rect x="0" y="5" width="1" height="1" fill="rgb(111,135,94)" fill-opacity="0.500"/>
-    <rect x="2" y="5" width="1" height="1" fill="rgb(38,206,169)" fill-opacity="0.500"/>
-    <rect x="0" y="6" width="1" height="1" fill="rgb(111,175,1)" fill-opacity="0.500"/>
-    <rect x="1" y="6" width="1" height="1" fill="rgb(118,223,93)" fill-opacity="0.500"/>
-    <rect x="2" y="6" width="1" height="1" fill="rgb(45,179,130)" fill-opacity="0.500"/>
+    <rect x="0" y="0" width="1" height="1" fill="rgb(120,208,190)" fill-opacity="0.500"/>
+    <rect x="1" y="0" width="1" height="1" fill="rgb(40,246,181)" fill-opacity="0.500"/>
+    <rect x="2" y="0" width="1" height="1" fill="rgb(105,163,45)" fill-opacity="0.500"/>
+    <rect x="0" y="1" width="1" height="1" fill="rgb(78,159,24)" fill-opacity="0.500"/>
+    <rect x="2" y="1" width="1" height="1" fill="rgb(11,222,54)" fill-opacity="0.500"/>
+    <rect x="0" y="2" width="1" height="1" fill="rgb(10,142,34)" fill-opacity="0.500"/>
+    <rect x="2" y="2" width="1" height="1" fill="rgb(110,158,57)" fill-opacity="0.500"/>
+    <rect x="0" y="3" width="1" height="1" fill="rgb(25,242,37)" fill-opacity="0.500"/>
+    <rect x="1" y="3" width="1" height="1" fill="rgb(6,207,62)" fill-opacity="0.500"/>
+    <rect x="2" y="3" width="1" height="1" fill="rgb(61,231,58)" fill-opacity="0.500"/>
+    <rect x="0" y="4" width="1" height="1" fill="rgb(2,171,44)" fill-opacity="0.500"/>
+    <rect x="2" y="4" width="1" height="1" fill="rgb(63,219,59)" fill-opacity="0.500"/>
+    <rect x="0" y="5" width="1" height="1" fill="rgb(32,165,76)" fill-opacity="0.500"/>
+    <rect x="2" y="5" width="1" height="1" fill="rgb(79,187,28)" fill-opacity="0.500"/>
+    <rect x="0" y="6" width="1" height="1" fill="rgb(5,199,12)" fill-opacity="0.500"/>
+    <rect x="1" y="6" width="1" height="1" fill="rgb(118,154,96)" fill-opacity="0.500"/>
+    <rect x="2" y="6" width="1" height="1" fill="rgb(75,156,104)" fill-opacity="0.500"/>
   </g>
 </svg>

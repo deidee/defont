@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="216" viewBox="0 0 5 9" shape-rendering="crispEdges">
+  <title>U+061F (؟)</title>
+  
+  <g>
+    <rect x="1" y="0" width="1" height="1" fill="rgb(116,169,136)" fill-opacity="0.500"/>
+    <rect x="2" y="0" width="1" height="1" fill="rgb(23,199,47)" fill-opacity="0.500"/>
+    <rect x="0" y="1" width="1" height="1" fill="rgb(117,189,111)" fill-opacity="0.500"/>
+    <rect x="3" y="1" width="1" height="1" fill="rgb(43,204,76)" fill-opacity="0.500"/>
+    <rect x="3" y="2" width="1" height="1" fill="rgb(56,255,113)" fill-opacity="0.500"/>
+    <rect x="2" y="3" width="1" height="1" fill="rgb(97,168,180)" fill-opacity="0.500"/>
+    <rect x="1" y="4" width="1" height="1" fill="rgb(105,205,165)" fill-opacity="0.500"/>
+    <rect x="1" y="6" width="1" height="1" fill="rgb(36,188,58)" fill-opacity="0.500"/>
+  </g>
+</svg>

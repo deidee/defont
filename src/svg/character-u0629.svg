@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="216" viewBox="0 0 5 9" shape-rendering="crispEdges">
+  <title>U+0629 (ة)</title>
+  
+  <g>
+    <rect x="1" y="0" width="1" height="1" fill="rgb(107,135,178)" fill-opacity="0.500"/>
+    <rect x="3" y="0" width="1" height="1" fill="rgb(105,240,133)" fill-opacity="0.500"/>
+    <rect x="1" y="2" width="1" height="1" fill="rgb(73,212,173)" fill-opacity="0.500"/>
+    <rect x="2" y="2" width="1" height="1" fill="rgb(16,148,79)" fill-opacity="0.500"/>
+    <rect x="3" y="2" width="1" height="1" fill="rgb(79,198,85)" fill-opacity="0.500"/>
+    <rect x="0" y="3" width="1" height="1" fill="rgb(90,184,87)" fill-opacity="0.500"/>
+    <rect x="4" y="3" width="1" height="1" fill="rgb(1,212,139)" fill-opacity="0.500"/>
+    <rect x="0" y="4" width="1" height="1" fill="rgb(104,144,77)" fill-opacity="0.500"/>
+    <rect x="4" y="4" width="1" height="1" fill="rgb(68,231,37)" fill-opacity="0.500"/>
+    <rect x="1" y="5" width="1" height="1" fill="rgb(88,187,14)" fill-opacity="0.500"/>
+    <rect x="2" y="5" width="1" height="1" fill="rgb(65,130,55)" fill-opacity="0.500"/>
+    <rect x="3" y="5" width="1" height="1" fill="rgb(61,174,188)" fill-opacity="0.500"/>
+  </g>
+</svg>
