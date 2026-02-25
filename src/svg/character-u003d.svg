@@ -3,11 +3,11 @@
   <title>U+003D (=)</title>
   
   <g>
-    <rect x="0" y="4" width="1" height="1" fill="rgb(32,159,144)" fill-opacity="0.500"/>
-    <rect x="1" y="4" width="1" height="1" fill="rgb(43,197,148)" fill-opacity="0.500"/>
-    <rect x="2" y="4" width="1" height="1" fill="rgb(2,239,81)" fill-opacity="0.500"/>
-    <rect x="0" y="6" width="1" height="1" fill="rgb(25,214,107)" fill-opacity="0.500"/>
-    <rect x="1" y="6" width="1" height="1" fill="rgb(53,200,131)" fill-opacity="0.500"/>
-    <rect x="2" y="6" width="1" height="1" fill="rgb(8,129,181)" fill-opacity="0.500"/>
+    <rect x="0" y="4" width="1" height="1" fill="rgb(70,158,158)" fill-opacity="0.500"/>
+    <rect x="1" y="4" width="1" height="1" fill="rgb(56,161,1)" fill-opacity="0.500"/>
+    <rect x="2" y="4" width="1" height="1" fill="rgb(110,174,22)" fill-opacity="0.500"/>
+    <rect x="0" y="6" width="1" height="1" fill="rgb(77,210,148)" fill-opacity="0.500"/>
+    <rect x="1" y="6" width="1" height="1" fill="rgb(93,218,127)" fill-opacity="0.500"/>
+    <rect x="2" y="6" width="1" height="1" fill="rgb(72,221,13)" fill-opacity="0.500"/>
   </g>
 </svg>

@@ -3,11 +3,11 @@
   <title>U+0021 (!)</title>
   
   <g>
-    <rect x="0" y="0" width="1" height="1" fill="rgb(62,211,146)" fill-opacity="0.500"/>
-    <rect x="0" y="1" width="1" height="1" fill="rgb(70,176,24)" fill-opacity="0.500"/>
-    <rect x="0" y="2" width="1" height="1" fill="rgb(30,188,38)" fill-opacity="0.500"/>
-    <rect x="0" y="3" width="1" height="1" fill="rgb(63,208,110)" fill-opacity="0.500"/>
-    <rect x="0" y="4" width="1" height="1" fill="rgb(32,175,87)" fill-opacity="0.500"/>
-    <rect x="0" y="6" width="1" height="1" fill="rgb(66,155,155)" fill-opacity="0.500"/>
+    <rect x="0" y="0" width="1" height="1" fill="rgb(27,222,62)" fill-opacity="0.500"/>
+    <rect x="0" y="1" width="1" height="1" fill="rgb(10,186,90)" fill-opacity="0.500"/>
+    <rect x="0" y="2" width="1" height="1" fill="rgb(16,137,146)" fill-opacity="0.500"/>
+    <rect x="0" y="3" width="1" height="1" fill="rgb(50,241,186)" fill-opacity="0.500"/>
+    <rect x="0" y="4" width="1" height="1" fill="rgb(88,171,4)" fill-opacity="0.500"/>
+    <rect x="0" y="6" width="1" height="1" fill="rgb(114,138,8)" fill-opacity="0.500"/>
   </g>
 </svg>
