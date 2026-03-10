@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="72" height="216" viewBox="0 0 3 9" shape-rendering="crispEdges">
+  <title>U+00EF (ï)</title>
+  
+  <g>
+    <rect x="0" y="0" width="1" height="1" fill="rgb(36,207,89)" fill-opacity="0.500"/>
+    <rect x="2" y="0" width="1" height="1" fill="rgb(92,255,33)" fill-opacity="0.500"/>
+    <rect x="1" y="2" width="1" height="1" fill="rgb(74,203,160)" fill-opacity="0.500"/>
+    <rect x="1" y="3" width="1" height="1" fill="rgb(120,183,25)" fill-opacity="0.500"/>
+    <rect x="1" y="4" width="1" height="1" fill="rgb(32,210,150)" fill-opacity="0.500"/>
+    <rect x="1" y="5" width="1" height="1" fill="rgb(80,234,37)" fill-opacity="0.500"/>
+    <rect x="1" y="6" width="1" height="1" fill="rgb(21,210,183)" fill-opacity="0.500"/>
+  </g>
+</svg>

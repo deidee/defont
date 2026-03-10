@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="216" viewBox="0 0 5 9" shape-rendering="crispEdges">
+  <title>U+2302 (⌂)</title>
+  
+  <g>
+    <rect x="2" y="1" width="1" height="1" fill="rgb(90,179,16)" fill-opacity="0.500"/>
+    <rect x="1" y="2" width="1" height="1" fill="rgb(101,157,110)" fill-opacity="0.500"/>
+    <rect x="3" y="2" width="1" height="1" fill="rgb(116,225,154)" fill-opacity="0.500"/>
+    <rect x="0" y="3" width="1" height="1" fill="rgb(59,230,27)" fill-opacity="0.500"/>
+    <rect x="4" y="3" width="1" height="1" fill="rgb(126,176,162)" fill-opacity="0.500"/>
+    <rect x="0" y="4" width="1" height="1" fill="rgb(63,246,175)" fill-opacity="0.500"/>
+    <rect x="4" y="4" width="1" height="1" fill="rgb(38,130,189)" fill-opacity="0.500"/>
+    <rect x="0" y="5" width="1" height="1" fill="rgb(95,179,132)" fill-opacity="0.500"/>
+    <rect x="4" y="5" width="1" height="1" fill="rgb(32,165,159)" fill-opacity="0.500"/>
+    <rect x="0" y="6" width="1" height="1" fill="rgb(34,159,157)" fill-opacity="0.500"/>
+    <rect x="1" y="6" width="1" height="1" fill="rgb(95,232,131)" fill-opacity="0.500"/>
+    <rect x="2" y="6" width="1" height="1" fill="rgb(74,188,163)" fill-opacity="0.500"/>
+    <rect x="3" y="6" width="1" height="1" fill="rgb(4,153,26)" fill-opacity="0.500"/>
+    <rect x="4" y="6" width="1" height="1" fill="rgb(19,202,112)" fill-opacity="0.500"/>
+  </g>
+</svg>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="72" height="216" viewBox="0 0 3 9" shape-rendering="crispEdges">
+  <title>U+00B1 (±)</title>
+  
+  <g>
+    <rect x="1" y="2" width="1" height="1" fill="rgb(30,141,168)" fill-opacity="0.500"/>
+    <rect x="0" y="3" width="1" height="1" fill="rgb(55,245,9)" fill-opacity="0.500"/>
+    <rect x="1" y="3" width="1" height="1" fill="rgb(103,213,176)" fill-opacity="0.500"/>
+    <rect x="2" y="3" width="1" height="1" fill="rgb(64,138,54)" fill-opacity="0.500"/>
+    <rect x="1" y="4" width="1" height="1" fill="rgb(12,170,128)" fill-opacity="0.500"/>
+    <rect x="0" y="6" width="1" height="1" fill="rgb(34,230,68)" fill-opacity="0.500"/>
+    <rect x="1" y="6" width="1" height="1" fill="rgb(39,221,189)" fill-opacity="0.500"/>
+    <rect x="2" y="6" width="1" height="1" fill="rgb(73,231,43)" fill-opacity="0.500"/>
+  </g>
+</svg>

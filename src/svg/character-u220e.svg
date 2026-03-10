@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="72" height="216" viewBox="0 0 3 9" shape-rendering="crispEdges">
+  <title>U+220E (∎)</title>
+  
+  <g>
+    <rect x="0" y="3" width="1" height="1" fill="rgb(79,161,181)" fill-opacity="0.500"/>
+    <rect x="1" y="3" width="1" height="1" fill="rgb(55,149,47)" fill-opacity="0.500"/>
+    <rect x="2" y="3" width="1" height="1" fill="rgb(40,238,14)" fill-opacity="0.500"/>
+    <rect x="0" y="4" width="1" height="1" fill="rgb(17,181,169)" fill-opacity="0.500"/>
+    <rect x="1" y="4" width="1" height="1" fill="rgb(115,160,99)" fill-opacity="0.500"/>
+    <rect x="2" y="4" width="1" height="1" fill="rgb(46,207,127)" fill-opacity="0.500"/>
+    <rect x="0" y="5" width="1" height="1" fill="rgb(77,195,18)" fill-opacity="0.500"/>
+    <rect x="1" y="5" width="1" height="1" fill="rgb(121,223,148)" fill-opacity="0.500"/>
+    <rect x="2" y="5" width="1" height="1" fill="rgb(92,182,110)" fill-opacity="0.500"/>
+    <rect x="0" y="6" width="1" height="1" fill="rgb(33,142,119)" fill-opacity="0.500"/>
+    <rect x="1" y="6" width="1" height="1" fill="rgb(57,246,111)" fill-opacity="0.500"/>
+    <rect x="2" y="6" width="1" height="1" fill="rgb(126,133,24)" fill-opacity="0.500"/>
+  </g>
+</svg>

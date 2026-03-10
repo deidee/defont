@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="48" height="216" viewBox="0 0 2 9" shape-rendering="crispEdges">
+  <title>U+005B ([)</title>
+  
+  <g>
+    <rect x="0" y="0" width="1" height="1" fill="rgb(79,184,137)" fill-opacity="0.500"/>
+    <rect x="1" y="0" width="1" height="1" fill="rgb(45,237,144)" fill-opacity="0.500"/>
+    <rect x="0" y="1" width="1" height="1" fill="rgb(101,238,31)" fill-opacity="0.500"/>
+    <rect x="0" y="2" width="1" height="1" fill="rgb(42,180,70)" fill-opacity="0.500"/>
+    <rect x="0" y="3" width="1" height="1" fill="rgb(39,129,100)" fill-opacity="0.500"/>
+    <rect x="0" y="4" width="1" height="1" fill="rgb(25,196,88)" fill-opacity="0.500"/>
+    <rect x="0" y="5" width="1" height="1" fill="rgb(12,241,177)" fill-opacity="0.500"/>
+    <rect x="0" y="6" width="1" height="1" fill="rgb(87,148,118)" fill-opacity="0.500"/>
+    <rect x="1" y="6" width="1" height="1" fill="rgb(109,223,52)" fill-opacity="0.500"/>
+  </g>
+</svg>

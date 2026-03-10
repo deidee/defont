@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="72" height="216" viewBox="0 0 3 9" shape-rendering="crispEdges">
+  <title>U+0029 ())</title>
+  
+  <g>
+    <rect x="0" y="0" width="1" height="1" fill="rgb(80,245,130)" fill-opacity="0.500"/>
+    <rect x="1" y="1" width="1" height="1" fill="rgb(86,182,96)" fill-opacity="0.500"/>
+    <rect x="2" y="2" width="1" height="1" fill="rgb(85,183,168)" fill-opacity="0.500"/>
+    <rect x="2" y="3" width="1" height="1" fill="rgb(36,177,189)" fill-opacity="0.500"/>
+    <rect x="2" y="4" width="1" height="1" fill="rgb(67,164,118)" fill-opacity="0.500"/>
+    <rect x="2" y="5" width="1" height="1" fill="rgb(83,224,35)" fill-opacity="0.500"/>
+    <rect x="2" y="6" width="1" height="1" fill="rgb(76,249,178)" fill-opacity="0.500"/>
+    <rect x="1" y="7" width="1" height="1" fill="rgb(73,170,2)" fill-opacity="0.500"/>
+    <rect x="0" y="8" width="1" height="1" fill="rgb(101,175,66)" fill-opacity="0.500"/>
+  </g>
+</svg>

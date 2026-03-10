@@ -32,3 +32,12 @@ Huisstijlletter van [deidee](https://deidee.nl/). Zie ook [detype](https://detyp
 ```html
 <link rel="stylesheet" href="https://hetcdn.nl/fonts/defont.css">
 ```
+
+## Nieuw karakter toevoegen
+
+```shell
+python .\tools\generate-glyphs.py
+python .\tools\generate-data.py
+python .\tools\generate-fonts.py
+python .\tools\generate-manifest.py
+```

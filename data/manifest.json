@@ -1,6 +1,6 @@
 {
   "manifestVersion": 1,
-  "generatedAt": "2026-02-25T12:22:00.177394+00:00",
+  "generatedAt": "2026-03-10T12:06:41.980618+00:00",
   "name": "defont",
   "metadata": {
     "family": "defont",
@@ -8,59 +8,71 @@
     "fullName": "defont Regular",
     "postScriptName": "defont-Regular",
     "unitsPerEm": 1000,
-    "glyphCount": 2378
+    "glyphCount": 2973
   },
   "files": [
     {
       "ext": "woff2",
       "file": "defont.woff2",
       "recommendedFile": "defont.woff2",
-      "bytes": 23176,
-      "sha256": "e50e845f68d9916c24ffd4c7098d0023efbdee47529aaa62c0336cfd311e67c3"
+      "bytes": 29016,
+      "sha256": "c564903ddb64fcc5067dd296406edb104218d2912e347547f8ed498025699d2c"
     },
     {
       "ext": "woff",
       "file": "defont.woff",
       "recommendedFile": "defont.woff",
-      "bytes": 41416,
-      "sha256": "b7a966e51a0dc03bb6d7348668042b28946a709d83a43fd9a22255a48a3eaf16"
+      "bytes": 52148,
+      "sha256": "47b5724a9b40266df2555853604c28d56054efc4733ea8b7a7c6b411e69ca2bd"
     },
     {
       "ext": "ttf",
       "file": "defont.ttf",
       "recommendedFile": "defont.ttf",
-      "bytes": 115736,
-      "sha256": "a7c59e71e6604505d1aad4454aaf45eff2ea164b8877e2edea0631f82f3c46ba"
+      "bytes": 144780,
+      "sha256": "46bf70859c1bc322feaf27f63f1b837e082e85b23b70784995f5ed2f5b8ab0df"
     }
   ],
   "unicodeRanges": [
     [
       32,
-      34
-    ],
-    [
-      39,
-      39
+      41
     ],
     [
       43,
-      46
+      125
     ],
     [
-      48,
-      90
-    ],
-    [
-      95,
-      95
-    ],
-    [
-      97,
-      122
+      167,
+      167
     ],
     [
       169,
       169
+    ],
+    [
+      177,
+      177
+    ],
+    [
+      235,
+      235
+    ],
+    [
+      239,
+      239
+    ],
+    [
+      246,
+      247
+    ],
+    [
+      252,
+      252
+    ],
+    [
+      305,
+      305
     ],
     [
       1025,
@@ -119,8 +131,36 @@
       8217
     ],
     [
+      8229,
+      8230
+    ],
+    [
       8251,
       8252
+    ],
+    [
+      8383,
+      8383
+    ],
+    [
+      8592,
+      8597
+    ],
+    [
+      8718,
+      8718
+    ],
+    [
+      8723,
+      8724
+    ],
+    [
+      8756,
+      8759
+    ],
+    [
+      8962,
+      8962
     ],
     [
       9167,
@@ -147,6 +187,10 @@
       9829
     ],
     [
+      9856,
+      9861
+    ],
+    [
       9993,
       9993
     ],
@@ -156,8 +200,8 @@
     ]
   ],
   "counts": {
-    "codepointsTotal": 183,
-    "codepointsBMP": 183,
+    "codepointsTotal": 229,
+    "codepointsBMP": 229,
     "codepointsAstral": 0
   },
   "features": {
@@ -168,7 +212,7 @@
     "commonBlocks": {
       "basicLatin": true,
       "latin1Supplement": true,
-      "latinExtendedA": false,
+      "latinExtendedA": true,
       "latinExtendedB": false
     },
     "preferredLowercaseFilenames": true,
