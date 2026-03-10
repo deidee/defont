@@ -6,8 +6,10 @@ tools/generate-glyphs.py
 Generate SVGs for every glyph defined in data/chars.php.
 
 Outputs:
-  src/svg/character-u{hex}.svg     (e.g. character-u0041.svg)
-  src/svg/character-notdef.svg    (if '.notdef' exists)
+  src/svg/character-u{hex}.svg                         (e.g. character-u0041.svg)
+  src/svg/character-notdef.svg                        (if '.notdef' exists)
+  src/svg/character-ligature-u0066-u0066-u0069.svg    (for ligatures like 'ffi')
+  src/svg/character-ligature-u03a4-u03a4-u03a4.svg    (for ligatures like 'ΤΤΤ')
 
 Assumptions (matches your glyph designer + chars.php):
 - Fixed ROWS = 9
@@ -36,8 +38,8 @@ ROWS = 9
 
 @dataclass(frozen=True)
 class Glyph:
-    key: str  # either "U+...." or ".notdef" etc
-    codepoint: Optional[int]  # None for non-unicode keys
+    key: str  # either "U+...." or ".notdef" or a ligature string like "ffi"
+    codepoint: Optional[int]  # None for non-numeric/string-key glyphs
     pixels: List[int]
     cols: int
 
@@ -91,10 +93,12 @@ def parse_glyphs_php(path: Path) -> Dict[str, Glyph]:
       $c[0x41] = array( ... );
       $data->c[0x41] = array( ... );
       $c['.notdef'] = array( ... );
+      $c['ffi'] = array( ... );
+      $c['ΤΤΤ'] = array( ... );
 
     Returns dict keyed by a stable glyph key:
-      - "U+0041" for unicode glyphs
-      - ".notdef" (or other string keys) for named glyphs
+      - "U+0041" for unicode glyphs defined by numeric key
+      - ".notdef" (or other string keys / ligatures) for quoted-string glyphs
     """
     src = path.read_text(encoding="utf-8")
     s = strip_php_comments(src)
@@ -136,7 +140,7 @@ def parse_glyphs_php(path: Path) -> Dict[str, Glyph]:
             key = f"U+{cp:04X}"
             found[key] = Glyph(key=key, codepoint=cp, pixels=px, cols=cols)
         else:
-            # named glyph
+            # string-key glyph (.notdef, ligatures, etc.)
             if len(px) == 0:
                 cols = 1
             else:
@@ -154,13 +158,54 @@ def parse_glyphs_php(path: Path) -> Dict[str, Glyph]:
     return found
 
 
-def codepoint_filename(cp: int, uppercase: bool = False) -> str:
+def hex_for_codepoint(cp: int, uppercase: bool = False) -> str:
     # Use 4 hex digits for BMP, 6 for >FFFF (matches your designer behavior)
     width = 4 if cp <= 0xFFFF else 6
     hx = f"{cp:0{width}x}"
-    if uppercase:
-        hx = hx.upper()
-    return f"character-u{hx}.svg"
+    return hx.upper() if uppercase else hx
+
+
+def codepoint_filename(cp: int, uppercase: bool = False) -> str:
+    return f"character-u{hex_for_codepoint(cp, uppercase=uppercase)}.svg"
+
+
+def safe_named_filename(key: str) -> str:
+    """
+    Safe fallback for dotted or other non-ligature named glyphs.
+    Example:
+      '.null' -> 'character-null.svg'
+    """
+    core = key.strip().strip(".")
+    core = re.sub(r"[^A-Za-z0-9._-]+", "-", core)
+    core = re.sub(r"-{2,}", "-", core).strip("-").lower()
+    if not core:
+        core = "named"
+    return f"character-{core}.svg"
+
+
+def string_key_filename(key: str, uppercase: bool = False) -> str:
+    """
+    Map string-key glyphs to filenames.
+
+    Rules:
+    - '.notdef' -> character-notdef.svg
+    - single-character string key -> character-uXXXX.svg
+    - dotted names like '.null' -> character-null.svg
+    - everything else -> ligature file using codepoint sequence
+      e.g. 'ffi' -> character-ligature-u0066-u0066-u0069.svg
+           'ΤΤΤ' -> character-ligature-u03a4-u03a4-u03a4.svg
+    """
+    if key == ".notdef":
+        return "character-notdef.svg"
+
+    if len(key) == 1:
+        return codepoint_filename(ord(key), uppercase=uppercase)
+
+    if key.startswith("."):
+        return safe_named_filename(key)
+
+    parts = [f"u{hex_for_codepoint(ord(ch), uppercase=uppercase)}" for ch in key]
+    return f"character-ligature-{'-'.join(parts)}.svg"
 
 
 def escape_xml(s: str) -> str:
@@ -232,7 +277,11 @@ def build_svg(
                 else:
                     rects.append(f'<rect x="{c}" y="{r}" width="1" height="1"/>')
 
-    title = glyph.key if glyph.codepoint is None else f"{glyph.key} ({chr(glyph.codepoint)})"
+    if glyph.codepoint is not None:
+        title = f"{glyph.key} ({chr(glyph.codepoint)})"
+    else:
+        title = glyph.key
+
     bg_rect = f'<rect x="0" y="0" width="{cols}" height="{rows}" fill="{bg}"/>' if include_bg else ""
 
     if mode == "dejade":
@@ -285,6 +334,12 @@ def main() -> int:
     ap.add_argument("--with-bg", dest="with_bg", action="store_true", help="Include a background rect")
     ap.add_argument("--uppercase", dest="uppercase", action="store_true", help="Uppercase hex in filenames")
     ap.add_argument("--only", dest="only", default="", help="Optional filter: comma list of hex cps (e.g. 0041,05D0)")
+    ap.add_argument(
+        "--force",
+        dest="force",
+        action="store_true",
+        help="Overwrite existing SVG files instead of skipping them",
+    )
     args = ap.parse_args()
 
     in_path = Path(args.in_path).resolve()
@@ -312,34 +367,23 @@ def main() -> int:
     rng = random.Random(args.seed) if args.seed is not None else random.Random()
 
     written = 0
-    skipped = 0
+    skipped_filtered = 0
+    skipped_existing = 0
 
-    # Write unicode glyphs
+    # Write numeric/unicode glyphs
     for g in sorted((g for g in glyphs.values() if g.codepoint is not None), key=lambda x: x.codepoint or 0):
         assert g.codepoint is not None
         if only_set is not None and g.codepoint not in only_set:
-            skipped += 1
+            skipped_filtered += 1
             continue
 
         filename = codepoint_filename(g.codepoint, uppercase=args.uppercase)
-        svg = build_svg(
-            g,
-            cell_px=args.cell_px,
-            mode=args.mode,
-            solid_fill=args.fill,
-            include_bg=args.with_bg,
-            bg=args.bg,
-            rng=rng,
-            dejade_alpha=args.dejade_alpha,
-        )
-        (out_dir / filename).write_text(svg, encoding="utf-8")
-        written += 1
+        out_path = out_dir / filename
 
-    # Write .notdef (and other named glyphs) if present
-    for g in (g for g in glyphs.values() if g.codepoint is None):
-        if g.key != ".notdef":
+        if out_path.exists() and not args.force:
+            skipped_existing += 1
             continue
-        name = "character-notdef.svg"
+
         svg = build_svg(
             g,
             cell_px=args.cell_px,
@@ -350,12 +394,39 @@ def main() -> int:
             rng=rng,
             dejade_alpha=args.dejade_alpha,
         )
-        (out_dir / name).write_text(svg, encoding="utf-8")
+        out_path.write_text(svg, encoding="utf-8")
         written += 1
 
-    print(f"[ok] Wrote {written} SVGs to {out_dir} (mode={args.mode}, seed={args.seed})")
-    if skipped:
-        print(f"[note] Skipped {skipped} (filtered by --only)")
+    # Write string-key glyphs (.notdef, ligatures, other named glyphs)
+    for g in sorted((g for g in glyphs.values() if g.codepoint is None), key=lambda x: x.key):
+        filename = string_key_filename(g.key, uppercase=args.uppercase)
+        out_path = out_dir / filename
+
+        if out_path.exists() and not args.force:
+            skipped_existing += 1
+            continue
+
+        svg = build_svg(
+            g,
+            cell_px=args.cell_px,
+            mode=args.mode,
+            solid_fill=args.fill,
+            include_bg=args.with_bg,
+            bg=args.bg,
+            rng=rng,
+            dejade_alpha=args.dejade_alpha,
+        )
+        out_path.write_text(svg, encoding="utf-8")
+        written += 1
+
+    print(
+        f"[ok] Wrote {written} SVGs to {out_dir} "
+        f"(mode={args.mode}, seed={args.seed}, force={args.force})"
+    )
+    if skipped_existing:
+        print(f"[note] Skipped {skipped_existing} existing file(s)")
+    if skipped_filtered:
+        print(f"[note] Skipped {skipped_filtered} glyph(s) filtered by --only")
     return 0
 
 

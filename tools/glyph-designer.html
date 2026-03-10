@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>defont — glyph designer</title>
+    <title>defont — glyph + ligature designer</title>
 
     <style>
         :root{
@@ -28,7 +28,6 @@
             --gridLine: rgba(255,255,255,.10);
             --gridLineColor: var(--gridLine);
 
-            /* dark mode needs "on" to be visible */
             --onFill: #f8fafc;
             --offFill: #ffffff;
             --offFillDark: #0b0d12;
@@ -108,7 +107,7 @@
             color: var(--muted);
             font-size: 12px;
             line-height: 1.4;
-            max-width: 820px;
+            max-width: 860px;
         }
 
         .wrap{
@@ -233,7 +232,6 @@
         .dot.warn{ background: var(--warn); }
         .dot.bad{ background: var(--bad); }
 
-        /* Editor */
         .editorWrap{
             padding: 14px;
         }
@@ -265,7 +263,7 @@
         .grid{
             display:grid;
             gap: var(--gap);
-            border-radius: 0;            /* <- no rounded corners */
+            border-radius: 0;
             border: 1px solid var(--border);
             background: var(--panel2);
             overflow:hidden;
@@ -315,7 +313,6 @@
             z-index: 10;
         }
 
-        /* Right pane previews */
         .split{
             display:grid;
             gap: 12px;
@@ -341,7 +338,30 @@
             border-radius: 14px;
             padding: 10px;
             overflow:auto;
-            max-height: 260px;
+            max-height: 360px;
+        }
+        .svgStage{
+            min-height: 120px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            border: 1px dashed var(--border);
+            border-radius: 10px;
+            background: rgba(255,255,255,.02);
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+        .svgStage svg{
+            max-width: 100%;
+            height: auto;
+            image-rendering: pixelated;
+            shape-rendering: crispEdges;
+        }
+        .svgSource{
+            margin:0;
+            white-space: pre;
+            font-size: 11px;
+            line-height: 1.35;
         }
 
         .toast{
@@ -390,10 +410,11 @@
 <body data-theme="auto">
 <header>
     <div>
-        <h1>defont — glyph designer</h1>
+        <h1>defont — glyph + ligature designer</h1>
         <p class="sub">
-            9-row variable-width bitmap glyphs. Click/drag to paint. Export as PHP line (for <span class="mono">data/glyphs.php</span>),
-            JSON, and an SVG preview. Auto-loads <span class="mono">../data/chars.json</span> (when served over HTTP).
+            9-row variable-width bitmap editor for both single-codepoint glyphs and multi-character ligatures.
+            Click/drag to paint. Exports PHP, JSON, and SVG. Auto-loads <span class="mono">../data/chars.json</span>
+            and also tries <span class="mono">../data/ligatures.json</span> when served over HTTP.
         </p>
     </div>
     <div class="row" style="margin:0;">
@@ -403,24 +424,33 @@
 </header>
 
 <div class="wrap">
-    <!-- Left: controls / import -->
     <section class="card">
-        <h2>Glyph</h2>
+        <h2>Token</h2>
         <div class="content">
-            <label for="charInput">Character (supports space)</label>
-            <input id="charInput" type="text" maxlength="2" value="A" />
+            <label for="charInput">Glyph / ligature token</label>
+            <input id="charInput" type="text" maxlength="16" value="A" />
             <div class="kv">
+                <div>Type</div><b id="designTypeDisplay">glyph</b>
                 <div>Display</div><b id="charDisplay"></b>
-                <div>Codepoint</div><b class="mono" id="codepointHex"></b>
+                <div>Key</div><b class="mono" id="tokenKey"></b>
+                <div>Codepoints</div><b class="mono" id="codepointHex"></b>
                 <div>Decimal</div><b class="mono" id="codepointDec"></b>
             </div>
 
             <div class="row">
-                <div style="flex:1; min-width: 160px;">
+                <div style="flex:1; min-width: 120px;">
+                    <label for="modeSelect">Mode</label>
+                    <select id="modeSelect">
+                        <option value="auto" selected>Auto</option>
+                        <option value="glyph">Glyph</option>
+                        <option value="ligature">Ligature</option>
+                    </select>
+                </div>
+                <div style="flex:1; min-width: 120px;">
                     <label for="colsInput">Columns</label>
                     <input id="colsInput" type="number" min="1" max="24" value="3" />
                 </div>
-                <div style="flex:1; min-width: 160px;">
+                <div style="flex:1; min-width: 120px;">
                     <label for="cellSize">Cell size</label>
                     <input id="cellSize" type="number" min="12" max="60" value="24" />
                 </div>
@@ -443,33 +473,32 @@
 
             <label>Import</label>
             <div class="small">
-                Loads <span class="mono">../data/chars.json</span> automatically.
-                If you want, you can also load another file manually:
+                Loads <span class="mono">../data/chars.json</span> automatically and also tries
+                <span class="mono">../data/ligatures.json</span>. You can also merge another JSON file manually.
             </div>
 
             <div class="fileRow">
                 <input id="charsJsonFile" type="file" accept=".json,application/json" />
             </div>
 
-            <label for="glyphSelect">Loaded glyphs</label>
+            <label for="glyphSelect">Loaded designs</label>
             <select id="glyphSelect" disabled>
-                <option value="">(no chars.json loaded)</option>
+                <option value="">(no design data loaded)</option>
             </select>
 
             <label for="importText">Paste pixels (PHP array / CSV)</label>
-            <textarea id="importText" spellcheck="false" placeholder="$c[0x41] = array(1,0,1,...);  or  1,0,1,..."></textarea>
+            <textarea id="importText" spellcheck="false" placeholder="$c[0x41] = array(1,0,1,...);  or  $c['fi'] = array(...);  or  1,0,1,..."></textarea>
             <div class="row">
                 <button class="btn primary" id="importBtn">Import</button>
                 <button class="btn" id="copyImportHint">Copy PHP line</button>
             </div>
 
             <div class="meta">
-                <span class="badge"><span class="dot" id="loadDot"></span><span id="loadStatus">Loading ../data/chars.json…</span></span>
+                <span class="badge"><span class="dot" id="loadDot"></span><span id="loadStatus">Loading design data…</span></span>
             </div>
         </div>
     </section>
 
-    <!-- Middle: editor -->
     <section class="card">
         <h2>Editor</h2>
         <div class="editorWrap">
@@ -496,20 +525,20 @@
         </div>
     </section>
 
-    <!-- Right: exports / previews -->
     <section class="card right">
         <h2>Export</h2>
         <div class="content split">
             <div>
-                <label>PHP line (for data/glyphs.php)</label>
+                <label>PHP line</label>
                 <textarea id="phpOut" spellcheck="false"></textarea>
                 <div class="row">
                     <button class="btn primary" id="copyPhp">Copy</button>
-                    <button class="btn" id="copyHex">Copy codepoint</button>
+                    <button class="btn" id="copyHex">Copy key / code</button>
                     <button class="btn danger" id="copyArrayOnly">Copy array(...)</button>
                 </div>
                 <div class="small" style="margin-top:8px;">
-                    Tip: for SPACE (U+0020) you probably want an empty array: <span class="mono">$c[0x20] = array();</span>
+                    Glyphs still export as numeric keys like <span class="mono">$c[0x41]</span>.
+                    Ligatures export as string keys on the same array, e.g. <span class="mono">$c['fi']</span>.
                 </div>
             </div>
 
@@ -546,7 +575,10 @@
             helpBtn: $("helpBtn"),
 
             charInput: $("charInput"),
+            modeSelect: $("modeSelect"),
+            designTypeDisplay: $("designTypeDisplay"),
             charDisplay: $("charDisplay"),
+            tokenKey: $("tokenKey"),
             codepointHex: $("codepointHex"),
             codepointDec: $("codepointDec"),
 
@@ -599,21 +631,23 @@
             toast: $("toast"),
         };
 
-        // state
         let cols = 3;
         let pixels = new Array(ROWS * cols).fill(0);
         let isPointerDown = false;
         let paintValue = 1;
         let svgBgOn = false;
         let lastPaintedIdx = -1;
+        let currentNamedKey = null;
+        let loadNote = "Loading ../data/chars.json and ../data/ligatures.json…";
 
-        // loaded glyphs (from chars.json)
         /** @type {Map<number, number[]>} */
-        let loadedMap = new Map();     // codepoint -> pixels[]
+        let loadedMap = new Map();
         /** @type {Map<string, number[]>} */
-        let loadedNamed = new Map();   // ".notdef" -> pixels[]
+        let loadedNamed = new Map();
+        /** @type {Map<string, number[]>} */
+        let loadedLigatures = new Map();
         /** @type {string[]} */
-        let loadedOrder = [];          // keys_in_order (strings)
+        let loadedOrder = [];
 
         function showToast(msg){
             els.toast.textContent = msg;
@@ -628,6 +662,10 @@
             return (typeof cp === "number") ? cp : null;
         }
 
+        function codepointsOf(str){
+            return Array.from(String(str || "")).map(ch => ch.codePointAt(0)).filter(Number.isFinite);
+        }
+
         function fmtHex(cp){
             const w = cp <= 0xFFFF ? 4 : 6;
             return "U+" + cp.toString(16).toUpperCase().padStart(w, "0");
@@ -637,9 +675,27 @@
             return "0x" + cp.toString(16).toUpperCase();
         }
 
-        function charLabel(ch){
-            if (ch === " ") return "␠ (space)";
-            return ch;
+        function tokenLabel(token){
+            if (token === "") return "(empty)";
+            return String(token).replaceAll(" ", "␠");
+        }
+
+        function phpCommentLabel(token){
+            if (token === " ") return "[SPACE]";
+            return tokenLabel(token);
+        }
+
+        function escapePhpString(s){
+            return String(s).replaceAll("\\", "\\\\").replaceAll("'", "\\'");
+        }
+
+        function escapeXml(s){
+            return String(s)
+                .replaceAll("&","&amp;")
+                .replaceAll("<","&lt;")
+                .replaceAll(">","&gt;")
+                .replaceAll('"',"&quot;")
+                .replaceAll("'","&apos;");
         }
 
         function setTheme(next){
@@ -662,8 +718,54 @@
 
         function applyGridLines(){
             const on = !!els.gridToggle.checked;
-            // set on the grid element so theme variables on <body> don't override it
             els.grid.style.setProperty("--gridLineColor", on ? "var(--gridLine)" : "transparent");
+        }
+
+        function normalizeTokenInput(){
+            let token = String(els.charInput.value ?? "");
+            const chars = Array.from(token);
+            if (els.modeSelect.value === "glyph" && chars.length > 1){
+                token = chars[0];
+            }
+            if (chars.length > 16){
+                token = chars.slice(0, 16).join("");
+            }
+            if (els.charInput.value !== token) els.charInput.value = token;
+            return token;
+        }
+
+        function resolveDesignKind(token){
+            if (currentNamedKey) return "named";
+            const forced = els.modeSelect.value;
+            if (forced === "glyph" || forced === "ligature") return forced;
+            return codepointsOf(token).length <= 1 ? "glyph" : "ligature";
+        }
+
+        function currentToken(){
+            return String(els.charInput.value ?? "");
+        }
+
+        function filenameStem(){
+            if (currentNamedKey) return `named-${sanitizeFilenamePart(currentNamedKey)}`;
+
+            const token = currentToken();
+            const cps = codepointsOf(token);
+            const kind = resolveDesignKind(token);
+
+            if (kind === "glyph" && cps.length === 1){
+                const cp = cps[0];
+                return `character-u${cp.toString(16).toUpperCase().padStart(cp <= 0xFFFF ? 4 : 6, "0")}`;
+            }
+            return `ligature-${sanitizeFilenamePart(token)}`;
+        }
+
+        function sanitizeFilenamePart(token){
+            const s = String(token || "");
+            const cleaned = s.normalize("NFKD").replace(/[^\w.-]+/g, "-").replace(/^-+|-+$/g, "");
+            if (cleaned) return cleaned;
+            const cps = codepointsOf(s);
+            if (!cps.length) return "empty";
+            return cps.map(cp => `u${cp.toString(16).toUpperCase().padStart(cp <= 0xFFFF ? 4 : 6, "0")}`).join("-");
         }
 
         function setCols(n){
@@ -674,8 +776,8 @@
             const next = new Array(ROWS * cols).fill(0);
             const oldCols = Math.max(1, Math.floor(pixels.length / ROWS));
             const minCols = Math.min(oldCols, cols);
-            for (let r=0;r<ROWS;r++){
-                for (let c=0;c<minCols;c++){
+            for (let r=0; r<ROWS; r++){
+                for (let c=0; c<minCols; c++){
                     next[r*cols + c] = pixels[r*oldCols + c] ? 1 : 0;
                 }
             }
@@ -687,7 +789,7 @@
             let lastNonEmpty = -1;
             for (let c=cols-1; c>=0; c--){
                 let any = false;
-                for (let r=0;r<ROWS;r++){
+                for (let r=0; r<ROWS; r++){
                     if (pixels[r*cols + c] === 1){ any = true; break; }
                 }
                 if (any){ lastNonEmpty = c; break; }
@@ -698,12 +800,12 @@
         }
 
         function clearAll(){ pixels.fill(0); render(); }
-        function invertAll(){ for (let i=0;i<pixels.length;i++) pixels[i] = pixels[i] ? 0 : 1; render(); }
+        function invertAll(){ for (let i=0; i<pixels.length; i++) pixels[i] = pixels[i] ? 0 : 1; render(); }
 
         function shift(dx, dy){
             const next = new Array(ROWS * cols).fill(0);
-            for (let r=0;r<ROWS;r++){
-                for (let c=0;c<cols;c++){
+            for (let r=0; r<ROWS; r++){
+                for (let c=0; c<cols; c++){
                     const rr = r - dy;
                     const cc = c - dx;
                     if (rr < 0 || rr >= ROWS || cc < 0 || cc >= cols) continue;
@@ -734,30 +836,47 @@
         }
 
         function buildPhpLine(){
-            const ch = els.charInput.value;
-            const cp = toCodepoint(ch);
-            if (cp == null) return "";
+            const token = currentToken();
+            const kind = resolveDesignKind(token);
 
-            const allZero = pixels.every(v => v === 0);
-            if (cp === 0x20 && allZero){
-                return `$c[0x20] = array(); //[SPACE]`;
+            if (kind === "named" && currentNamedKey){
+                const arr = pixels.join(",");
+                return `$c['${escapePhpString(currentNamedKey)}'] = array(${arr}); //${currentNamedKey}`;
             }
 
-            const arr = pixels.join(",");
-            const comment = (ch === " ") ? "[SPACE]" : ch;
-            return `$c[${fmt0x(cp)}] = array(${arr}); //${comment}`;
+            if (kind === "glyph"){
+                const cp = toCodepoint(token);
+                if (cp == null) return "";
+
+                const allZero = pixels.every(v => v === 0);
+                if (cp === 0x20 && allZero){
+                    return `$c[0x20] = array(); //[SPACE]`;
+                }
+
+                return `$c[${fmt0x(cp)}] = array(${pixels.join(",")}); //${phpCommentLabel(token)}`;
+            }
+
+            if (!token) return "";
+            return `$c['${escapePhpString(token)}'] = array(${pixels.join(",")}); //[LIGATURE] ${phpCommentLabel(token)}`;
         }
 
         function buildJson(){
-            const ch = els.charInput.value;
-            const cp = toCodepoint(ch);
+            const token = currentToken();
+            const cps = codepointsOf(token);
+            const kind = resolveDesignKind(token);
+            const key = kind === "named"
+                ? currentNamedKey
+                : (kind === "glyph" && cps.length === 1 ? fmt0x(cps[0]) : token || null);
+
             const obj = {
-                char: (ch === "" ? null : ch),
-                display: (ch === " " ? "␠" : ch),
-                codepoint: cp,
-                hex: cp == null ? null : fmtHex(cp),
+                kind,
+                token: kind === "named" ? null : (token === "" ? null : token),
+                display: kind === "named" ? currentNamedKey : tokenLabel(token),
+                key,
+                codepoints: cps,
+                hexes: cps.map(fmtHex),
                 rows: ROWS,
-                cols: cols,
+                cols,
                 len: pixels.length,
                 ones: onCount(),
                 pixels: pixels.slice(),
@@ -772,8 +891,8 @@
             const h = ROWS * cellPx;
 
             const rects = [];
-            for (let r=0;r<ROWS;r++){
-                for (let c=0;c<cols;c++){
+            for (let r=0; r<ROWS; r++){
+                for (let c=0; c<cols; c++){
                     if (pixels[r*cols + c] !== 1) continue;
                     rects.push(`<rect x="${c*cellPx}" y="${r*cellPx}" width="${cellPx}" height="${cellPx}" />`);
                 }
@@ -782,8 +901,16 @@
             const bg = svgBgOn ? `<rect x="0" y="0" width="${w}" height="${h}" fill="white"/>` : "";
             const fg = `<g fill="black">${rects.join("")}</g>`;
 
-            const cp = toCodepoint(els.charInput.value);
-            const title = cp == null ? "glyph" : `glyph ${fmtHex(cp)}`;
+            const token = currentToken();
+            const kind = resolveDesignKind(token);
+            let title = "design";
+            if (kind === "named" && currentNamedKey) title = `named ${currentNamedKey}`;
+            else if (kind === "glyph"){
+                const cp = toCodepoint(token);
+                title = cp == null ? "glyph" : `glyph ${fmtHex(cp)}`;
+            }else{
+                title = token ? `ligature ${token}` : "ligature";
+            }
 
             return `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">
@@ -793,26 +920,22 @@
 </svg>`;
         }
 
-        function escapeXml(s){
-            return String(s)
-                .replaceAll("&","&amp;")
-                .replaceAll("<","&lt;")
-                .replaceAll(">","&gt;")
-                .replaceAll('"',"&quot;")
-                .replaceAll("'","&apos;");
-        }
-
         function refreshOutputs(){
             els.phpOut.value = buildPhpLine();
             els.jsonOut.value = buildJson();
 
             const svg = buildSvg();
             els.svgPreviewBox.textContent = "";
+
+            const stage = document.createElement("div");
+            stage.className = "svgStage";
+            stage.innerHTML = svg;
+
             const pre = document.createElement("pre");
-            pre.className = "mono";
-            pre.style.margin = "0";
-            pre.style.whiteSpace = "pre";
+            pre.className = "mono svgSource";
             pre.textContent = svg;
+
+            els.svgPreviewBox.appendChild(stage);
             els.svgPreviewBox.appendChild(pre);
         }
 
@@ -820,9 +943,7 @@
             els.grid.style.gridTemplateColumns = `repeat(${cols}, var(--cellW))`;
             els.grid.textContent = "";
 
-            // baseline: boundary above second row from bottom
-            const baselineOn = !!els.baselineToggle.checked;
-            if (baselineOn){
+            if (els.baselineToggle.checked){
                 const line = document.createElement("div");
                 line.className = "baselineLine";
                 const cellH = parseInt(getComputedStyle(document.documentElement).getPropertyValue("--cellH"), 10) || 24;
@@ -830,8 +951,8 @@
                 els.grid.appendChild(line);
             }
 
-            for (let r=0;r<ROWS;r++){
-                for (let c=0;c<cols;c++){
+            for (let r=0; r<ROWS; r++){
+                for (let c=0; c<cols; c++){
                     const i = r*cols + c;
                     const cell = document.createElement("div");
                     cell.className = "cell" + (pixels[i] ? " on" : "");
@@ -845,43 +966,58 @@
             refreshOutputs();
         }
 
-        function setCharFromInput(){
-            const raw = els.charInput.value ?? "";
-            let ch = raw;
-            if (raw.length > 0){
-                ch = Array.from(raw)[0];
-                els.charInput.value = ch;
+        function updateIdentityDisplay(){
+            const token = currentToken();
+            const cps = codepointsOf(token);
+            const kind = resolveDesignKind(token);
+
+            els.designTypeDisplay.textContent = kind;
+
+            if (kind === "named" && currentNamedKey){
+                els.charDisplay.textContent = currentNamedKey;
+                els.tokenKey.textContent = `'${currentNamedKey}'`;
+                els.codepointHex.textContent = "-";
+                els.codepointDec.textContent = "-";
+                return;
             }
 
-            const cp = toCodepoint(ch);
-            els.charDisplay.textContent = (ch === "" ? "(empty)" : charLabel(ch));
-            els.codepointHex.textContent = cp == null ? "-" : fmtHex(cp);
-            els.codepointDec.textContent = cp == null ? "-" : String(cp);
+            els.charDisplay.textContent = tokenLabel(token);
+            els.tokenKey.textContent = token === ""
+                ? "-"
+                : (kind === "glyph" && cps.length === 1 ? fmt0x(cps[0]) : `'${tokenLabel(token)}'`);
+            els.codepointHex.textContent = cps.length ? cps.map(fmtHex).join(" ") : "-";
+            els.codepointDec.textContent = cps.length ? cps.join(", ") : "-";
+        }
 
-            if (cp != null && loadedMap.has(cp)){
-                loadGlyphFromCp(cp);
+        function setTokenFromInput(){
+            const token = normalizeTokenInput();
+            if (token !== "") currentNamedKey = null;
+            updateIdentityDisplay();
+
+            const kind = resolveDesignKind(token);
+            const cps = codepointsOf(token);
+
+            if (kind === "glyph" && cps.length === 1 && loadedMap.has(cps[0])){
+                loadGlyphFromCp(cps[0], false);
+                return;
+            }
+            if (kind === "ligature" && token && loadedLigatures.has(token)){
+                loadLigatureFromKey(token, false);
                 return;
             }
 
             refreshOutputs();
         }
 
-        // Drag paint logic
         function cellElFromPointerEvent(e){
-            // With pointer capture, e.target may be the grid; use elementFromPoint.
             const elUnder = document.elementFromPoint(e.clientX, e.clientY);
             if (elUnder instanceof HTMLElement){
                 const cell = elUnder.classList.contains("cell") ? elUnder : elUnder.closest(".cell");
                 if (cell instanceof HTMLElement) return cell;
             }
-            // fallback to direct target if needed
             const t = e.target;
             if (t instanceof HTMLElement && t.classList.contains("cell")) return t;
             return null;
-        }
-
-        function baselineVisible(){
-            return !!els.baselineToggle.checked;
         }
 
         function applyPaintAtCellEl(cellEl){
@@ -894,11 +1030,9 @@
 
             const changed = setCell(r, c, paintValue);
             lastPaintedIdx = idx;
-
             if (!changed) return;
 
-            // Update only this cell (baseline is child[0] if visible)
-            const nodeIndex = baselineVisible() ? (1 + idx) : idx;
+            const nodeIndex = els.baselineToggle.checked ? (1 + idx) : idx;
             const child = els.grid.children[nodeIndex];
             if (child && child.classList){
                 child.classList.toggle("on", pixels[idx] === 1);
@@ -916,8 +1050,6 @@
             const r = parseInt(cellEl.dataset.r, 10);
             const c = parseInt(cellEl.dataset.c, 10);
             const idx = r*cols + c;
-
-            // if starting cell is on -> erase; else paint
             paintValue = pixels[idx] ? 0 : 1;
 
             applyPaintAtCellEl(cellEl);
@@ -927,12 +1059,9 @@
         }
 
         function onPointerMove(e){
-            if (!isPointerDown) return;
-            if (!els.dragMode.checked) return;
-
+            if (!isPointerDown || !els.dragMode.checked) return;
             const cellEl = cellElFromPointerEvent(e);
             if (!cellEl) return;
-
             applyPaintAtCellEl(cellEl);
             updateMeta();
             refreshOutputs();
@@ -948,7 +1077,6 @@
             e.preventDefault();
         }
 
-        // Import parsing (manual paste)
         function parsePixelsFromText(text){
             const s = String(text || "").trim();
             if (!s) return null;
@@ -962,26 +1090,12 @@
             return nums.map(ch => ch === "1" ? 1 : 0);
         }
 
-        // chars.json parsing
         function isNumericString(k){ return /^[0-9]+$/.test(k); }
 
-        function parseCharsJson(text){
-            const obj = JSON.parse(String(text || ""));
-            if (!obj || typeof obj !== "object") throw new Error("Invalid JSON");
-
-            const glyphs = obj.glyphs;
-            if (!glyphs || typeof glyphs !== "object") throw new Error("Missing top-level 'glyphs' object");
-
-            const byCp = new Map();
-            const named = new Map();
-            const keysInOrder = Array.isArray(obj?.meta?.keys_in_order) ? obj.meta.keys_in_order.map(String) : [];
-
-            for (const [kRaw, g] of Object.entries(glyphs)){
-                const k = String(kRaw);
-                const gg = (g && typeof g === "object") ? g : null;
-                if (!gg) continue;
-
-                let arr = [];
+        function extractPixelArray(gg){
+            let arr = [];
+            if (Array.isArray(gg)) arr = gg.slice();
+            else if (gg && typeof gg === "object"){
                 if (Array.isArray(gg.data)) arr = gg.data.slice();
                 else if (Array.isArray(gg.pixels)) arr = gg.pixels.slice();
                 else if (Array.isArray(gg.rows)) {
@@ -989,29 +1103,73 @@
                         if (Array.isArray(row)) for (const v of row) arr.push(v);
                     }
                 }
+            }
+            return arr.map(v => (v ? 1 : 0));
+        }
 
-                const px = arr.map(v => (v ? 1 : 0));
+        function parseDesignJson(text){
+            const obj = JSON.parse(String(text || ""));
+            if (!obj || typeof obj !== "object") throw new Error("Invalid JSON");
 
-                if (k === ".notdef" || (gg.codepoint == null && !isNumericString(k))){
-                    named.set(k, px);
-                    continue;
+            const byCp = new Map();
+            const named = new Map();
+            const ligatures = new Map();
+            const order = [];
+
+            const pushOrder = (arr) => {
+                if (!Array.isArray(arr)) return;
+                for (const key of arr.map(String)) if (!order.includes(key)) order.push(key);
+            };
+
+            pushOrder(obj?.meta?.keys_in_order);
+            pushOrder(obj?.meta?.ligatures_in_order);
+
+            function ingestEntries(entries, preferredKind){
+                if (!entries || typeof entries !== "object") return;
+
+                for (const [kRaw, g] of Object.entries(entries)){
+                    const key = String(kRaw);
+                    const px = extractPixelArray(g);
+                    if (px.length > 0 && (px.length % ROWS) !== 0){
+                        console.warn("Skipping design with invalid length:", key, px.length);
+                        continue;
+                    }
+
+                    const gg = (g && typeof g === "object" && !Array.isArray(g)) ? g : {};
+                    let cp = null;
+                    if (typeof gg.codepoint === "number" && Number.isFinite(gg.codepoint)) cp = gg.codepoint;
+                    else if (isNumericString(key)) cp = parseInt(key, 10);
+
+                    if (preferredKind === "named" || key === ".notdef"){
+                        named.set(key, px);
+                        if (!order.includes(key)) order.push(key);
+                        continue;
+                    }
+
+                    if (preferredKind !== "ligature" && cp != null && Number.isFinite(cp)){
+                        byCp.set(cp, px);
+                        const cpKey = String(cp);
+                        if (!order.includes(cpKey)) order.push(cpKey);
+                        continue;
+                    }
+
+                    const ligKey = String(gg.token || gg.sequence || gg.ligature || key);
+                    if (ligKey){
+                        ligatures.set(ligKey, px);
+                        if (!order.includes(ligKey)) order.push(ligKey);
+                    }
                 }
-
-                let cp = null;
-                if (typeof gg.codepoint === "number" && Number.isFinite(gg.codepoint)) cp = gg.codepoint;
-                else if (isNumericString(k)) cp = parseInt(k, 10);
-
-                if (cp == null || !Number.isFinite(cp)) continue;
-
-                if (px.length > 0 && (px.length % ROWS) !== 0){
-                    console.warn("Skipping glyph with invalid length:", cp, px.length);
-                    continue;
-                }
-
-                byCp.set(cp, px);
             }
 
-            return { byCp, named, keysInOrder };
+            if (obj.glyphs && typeof obj.glyphs === "object") ingestEntries(obj.glyphs, "auto");
+            if (obj.ligatures && typeof obj.ligatures === "object") ingestEntries(obj.ligatures, "ligature");
+            if (obj.named && typeof obj.named === "object") ingestEntries(obj.named, "named");
+
+            if (!obj.glyphs && !obj.ligatures && !obj.named){
+                ingestEntries(obj, "auto");
+            }
+
+            return { byCp, named, ligatures, order };
         }
 
         function populateGlyphSelect(){
@@ -1019,38 +1177,71 @@
 
             const opt0 = document.createElement("option");
             opt0.value = "";
-            opt0.textContent = "(select glyph)";
+            opt0.textContent = "(select design)";
             els.glyphSelect.appendChild(opt0);
 
-            const list = loadedOrder.length
+            const total = loadedMap.size + loadedNamed.size + loadedLigatures.size;
+            if (total === 0){
+                els.glyphSelect.disabled = true;
+                return;
+            }
+
+            const sourceOrder = loadedOrder.length
                 ? loadedOrder.slice()
                 : [
-                    ...(loadedNamed.has(".notdef") ? [".notdef"] : []),
-                    ...Array.from(loadedMap.keys()).sort((a,b)=>a-b).map(cp => String(cp)),
+                    ...(loadedNamed.has(".notdef") ? [".notdef"] : Array.from(loadedNamed.keys()).sort()),
+                    ...Array.from(loadedMap.keys()).sort((a,b)=>a-b).map(String),
+                    ...Array.from(loadedLigatures.keys()).sort((a,b)=>a.localeCompare(b)),
                 ];
 
-            for (const key of list){
-                if (key === ".notdef" && !loadedNamed.has(".notdef")) continue;
+            const seen = new Set();
+            const groups = {
+                named: document.createElement("optgroup"),
+                glyphs: document.createElement("optgroup"),
+                ligatures: document.createElement("optgroup"),
+            };
+            groups.named.label = "Named";
+            groups.glyphs.label = "Glyphs";
+            groups.ligatures.label = "Ligatures";
 
-                if (isNumericString(key)){
-                    const cp = parseInt(key, 10);
-                    if (!Number.isFinite(cp) || !loadedMap.has(cp)) continue;
-
-                    const opt = document.createElement("option");
-                    opt.value = key;
-                    const ch = String.fromCodePoint(cp);
-                    opt.textContent = `${fmtHex(cp)}  ${ch === " " ? "␠" : ch}`;
-                    els.glyphSelect.appendChild(opt);
-                    continue;
-                }
+            for (const rawKey of sourceOrder){
+                const key = String(rawKey);
+                if (seen.has(key)) continue;
 
                 if (loadedNamed.has(key)){
                     const opt = document.createElement("option");
-                    opt.value = key;
-                    opt.textContent = `(named) ${key}`;
-                    els.glyphSelect.appendChild(opt);
+                    opt.value = `named:${key}`;
+                    opt.textContent = key;
+                    groups.named.appendChild(opt);
+                    seen.add(key);
+                    continue;
+                }
+
+                if (isNumericString(key)){
+                    const cp = parseInt(key, 10);
+                    if (Number.isFinite(cp) && loadedMap.has(cp)){
+                        const opt = document.createElement("option");
+                        opt.value = `glyph:${cp}`;
+                        const ch = String.fromCodePoint(cp);
+                        opt.textContent = `${fmtHex(cp)}  ${ch === " " ? "␠" : ch}`;
+                        groups.glyphs.appendChild(opt);
+                        seen.add(key);
+                    }
+                    continue;
+                }
+
+                if (loadedLigatures.has(key)){
+                    const opt = document.createElement("option");
+                    opt.value = `lig:${key}`;
+                    opt.textContent = key.replaceAll(" ", "␠");
+                    groups.ligatures.appendChild(opt);
+                    seen.add(key);
                 }
             }
+
+            if (groups.named.children.length) els.glyphSelect.appendChild(groups.named);
+            if (groups.glyphs.children.length) els.glyphSelect.appendChild(groups.glyphs);
+            if (groups.ligatures.children.length) els.glyphSelect.appendChild(groups.ligatures);
 
             els.glyphSelect.disabled = false;
         }
@@ -1064,38 +1255,62 @@
             }
 
             if (arr.length % ROWS !== 0){
-                showToast("Loaded glyph has invalid length");
+                showToast("Loaded design has invalid length");
                 return;
             }
 
-            const newCols = Math.max(1, arr.length / ROWS);
-            cols = newCols;
+            cols = Math.max(1, arr.length / ROWS);
             els.colsInput.value = String(cols);
             pixels = arr.slice();
             render();
         }
 
-        function loadGlyphFromCp(cp){
+        function loadGlyphFromCp(cp, toast = true){
             const arr = loadedMap.get(cp);
             if (!arr) return;
+            currentNamedKey = null;
             loadGlyphPixelsArray(arr);
-            showToast("Loaded from chars.json");
+            updateIdentityDisplay();
+            if (toast) showToast("Loaded glyph");
         }
 
-        function loadGlyphFromNamed(name){
-            const arr = loadedNamed.get(name);
+        function loadLigatureFromKey(key, toast = true){
+            const arr = loadedLigatures.get(key);
             if (!arr) return;
+            currentNamedKey = null;
             loadGlyphPixelsArray(arr);
-            showToast(`Loaded ${name}`);
+            updateIdentityDisplay();
+            if (toast) showToast("Loaded ligature");
         }
 
-        function updateLoadStatus(ok, msg){
-            els.loadDot.classList.remove("ok","warn","bad");
-            els.loadDot.classList.add(ok ? "ok" : "warn");
+        function loadNamedFromKey(key, toast = true){
+            const arr = loadedNamed.get(key);
+            if (!arr) return;
+            currentNamedKey = key;
+            els.charInput.value = "";
+            loadGlyphPixelsArray(arr);
+            updateIdentityDisplay();
+            if (toast) showToast(`Loaded ${key}`);
+        }
+
+        function refreshLoadStatus(note){
+            if (typeof note === "string") loadNote = note;
+
+            const glyphCount = loadedMap.size;
+            const ligatureCount = loadedLigatures.size;
+            const namedCount = loadedNamed.size;
+            const total = glyphCount + ligatureCount + namedCount;
+
+            els.loadDot.classList.remove("ok", "warn", "bad");
+            els.loadDot.classList.add(total > 0 ? "ok" : "warn");
+
+            let msg = total > 0
+                ? `Loaded ${glyphCount} glyphs, ${ligatureCount} ligatures${namedCount ? `, ${namedCount} named` : ""}`
+                : "No design data loaded";
+            if (loadNote) msg += ` — ${loadNote}`;
             els.loadStatus.textContent = msg;
         }
 
-        // Downloads
         function download(filename, content, mime){
             const blob = new Blob([content], {type: mime});
             const url = URL.createObjectURL(blob);
@@ -1125,72 +1340,91 @@
 
         async function loadJsonText(text, label){
             try{
-                const parsed = parseCharsJson(text);
+                const parsed = parseDesignJson(text);
 
-                loadedMap = parsed.byCp;
-                loadedNamed = parsed.named;
-                loadedOrder = parsed.keysInOrder;
+                for (const [cp, arr] of parsed.byCp.entries()) loadedMap.set(cp, arr);
+                for (const [key, arr] of parsed.named.entries()) loadedNamed.set(key, arr);
+                for (const [key, arr] of parsed.ligatures.entries()) loadedLigatures.set(key, arr);
+                for (const key of parsed.order){
+                    const s = String(key);
+                    if (!loadedOrder.includes(s)) loadedOrder.push(s);
+                }
 
                 populateGlyphSelect();
+                refreshLoadStatus(label);
 
-                const total = loadedMap.size + loadedNamed.size;
-                if (total > 0){
-                    updateLoadStatus(true, `Loaded ${total} glyphs (${label})`);
-                    // Auto-load current char if possible
-                    const cp = toCodepoint(els.charInput.value);
-                    if (cp != null && loadedMap.has(cp)) loadGlyphFromCp(cp);
-                }else{
-                    updateLoadStatus(false, `No glyphs found (${label})`);
-                    showToast("No glyphs found");
-                }
+                const token = currentToken();
+                const kind = resolveDesignKind(token);
+                const cps = codepointsOf(token);
+
+                if (kind === "glyph" && cps.length === 1 && loadedMap.has(cps[0])) loadGlyphFromCp(cps[0], false);
+                else if (kind === "ligature" && token && loadedLigatures.has(token)) loadLigatureFromKey(token, false);
+                else refreshOutputs();
             }catch (e){
                 console.error(e);
-                updateLoadStatus(false, `Invalid chars.json (${label})`);
-                showToast("Failed to parse chars.json");
+                refreshLoadStatus(`failed to parse ${label}`);
+                showToast(`Failed to parse ${label}`);
             }
         }
 
-        async function autoLoadDefaultJson(){
-            const url = "../data/chars.json";
+        async function tryAutoLoad(url, {optional = false} = {}){
             try{
                 const res = await fetch(url, {cache: "no-store"});
                 if (!res.ok) throw new Error(String(res.status));
                 const text = await res.text();
                 await loadJsonText(text, url);
+                return true;
             }catch (e){
-                console.error(e);
-                updateLoadStatus(false, `Couldn't fetch ${url} (serve via http://localhost/...)`);
-                showToast(`Couldn't load ${url}`);
+                if (!optional) console.error(e);
+                return false;
             }
         }
 
-        // Events
+        async function autoLoadDefaultJson(){
+            const charsOk = await tryAutoLoad("../data/chars.json", {optional: false});
+            const ligOk = await tryAutoLoad("../data/ligatures.json", {optional: true});
+
+            if (charsOk || ligOk){
+                refreshLoadStatus("default files");
+                return;
+            }
+
+            refreshLoadStatus("couldn't fetch default JSON files (serve via http://localhost/...)");
+            showToast("Couldn't load default JSON files");
+        }
+
         els.themeBtn.addEventListener("click", cycleTheme);
 
         els.helpBtn.addEventListener("click", () => {
             alert(
                 `How to use
 
-1) Pick a character (space works).
-2) Set columns (width).
-3) Click cells to toggle; drag paints.
-4) Export:
-   - PHP line for data/glyphs.php
-   - JSON (rows/cols/pixels)
-   - SVG preview
+1) Enter one character for a normal glyph, or several characters for a ligature.
+2) Leave mode on Auto, or force Glyph / Ligature when you want.
+3) Set columns (width).
+4) Click cells to toggle; drag paints.
+5) Export as PHP, JSON, or SVG.
 
 Import:
-- Auto-loads ../data/chars.json (when served over HTTP).
-- You can also load another chars.json via the file input.
+- Auto-loads ../data/chars.json and tries ../data/ligatures.json.
+- You can also load another JSON file manually.
 - Or paste a PHP array(...) / CSV list into the import box.
 
 Notes:
 - ROWS is fixed at 9 for defont.
-- “Trim cols” removes trailing empty columns.`
+- “Trim cols” removes trailing empty columns.
+- Ligatures export as string keys on the same $c array, e.g. $c['fi'] = array(...);`
             );
         });
 
-        els.charInput.addEventListener("input", setCharFromInput);
+        els.charInput.addEventListener("input", setTokenFromInput);
+        els.modeSelect.addEventListener("change", () => {
+            const before = currentToken();
+            currentNamedKey = null;
+            setTokenFromInput();
+            const after = currentToken();
+            if (before !== after) showToast("Trimmed to first character for glyph mode");
+        });
         els.colsInput.addEventListener("change", () => setCols(els.colsInput.value));
         els.cellSize.addEventListener("change", () => { applyCellSize(); render(); });
 
@@ -1213,9 +1447,15 @@ Notes:
 
         els.copyPhp.addEventListener("click", async () => { await copy(els.phpOut.value); showToast("Copied PHP line"); });
         els.copyHex.addEventListener("click", async () => {
-            const cp = toCodepoint(els.charInput.value);
-            await copy(cp == null ? "" : fmtHex(cp));
-            showToast("Copied codepoint");
+            const token = currentToken();
+            const kind = resolveDesignKind(token);
+            const cps = codepointsOf(token);
+            let out = "";
+            if (kind === "named" && currentNamedKey) out = currentNamedKey;
+            else if (kind === "glyph" && cps.length === 1) out = fmtHex(cps[0]);
+            else out = token;
+            await copy(out);
+            showToast(kind === "glyph" ? "Copied codepoint" : "Copied key");
         });
         els.copyArrayOnly.addEventListener("click", async () => {
             const s = els.phpOut.value;
@@ -1234,20 +1474,12 @@ Notes:
         });
 
         els.downloadSvg.addEventListener("click", () => {
-            const cp = toCodepoint(els.charInput.value);
-            const name = cp == null
-                ? "character.svg"
-                : `character-u${cp.toString(16).toUpperCase().padStart(cp<=0xFFFF?4:6,"0")}.svg`;
-            download(name, buildSvg(), "image/svg+xml;charset=utf-8");
+            download(`${filenameStem()}.svg`, buildSvg(), "image/svg+xml;charset=utf-8");
             showToast("Downloaded SVG");
         });
 
         els.downloadJson.addEventListener("click", () => {
-            const cp = toCodepoint(els.charInput.value);
-            const name = cp == null
-                ? "glyph.json"
-                : `glyph-u${cp.toString(16).toUpperCase().padStart(cp<=0xFFFF?4:6,"0")}.json`;
-            download(name, buildJson(), "application/json;charset=utf-8");
+            download(`${filenameStem()}.json`, buildJson(), "application/json;charset=utf-8");
             showToast("Downloaded JSON");
         });
 
@@ -1258,12 +1490,11 @@ Notes:
                 setCols(1);
                 pixels.fill(0);
                 render();
-                showToast("Imported empty (space-like)");
+                showToast("Imported empty design");
                 return;
             }
             if (arr.length % ROWS !== 0){ showToast("Import length must be divisible by 9"); return; }
-            const newCols = Math.max(1, arr.length / ROWS);
-            cols = newCols;
+            cols = Math.max(1, arr.length / ROWS);
             els.colsInput.value = String(cols);
             pixels = arr.slice();
             render();
@@ -1276,18 +1507,26 @@ Notes:
             const v = els.glyphSelect.value;
             if (!v) return;
 
-            if (!isNumericString(v)){
-                loadGlyphFromNamed(v);
+            if (v.startsWith("named:")){
+                loadNamedFromKey(v.slice(6));
                 return;
             }
-
-            const cp = parseInt(v, 10);
-            if (!Number.isFinite(cp)) return;
-
-            const ch = String.fromCodePoint(cp);
-            els.charInput.value = ch;
-            setCharFromInput();
-            loadGlyphFromCp(cp);
+            if (v.startsWith("glyph:")){
+                const cp = parseInt(v.slice(6), 10);
+                if (!Number.isFinite(cp)) return;
+                currentNamedKey = null;
+                els.modeSelect.value = "glyph";
+                els.charInput.value = String.fromCodePoint(cp);
+                loadGlyphFromCp(cp);
+                return;
+            }
+            if (v.startsWith("lig:")){
+                const key = v.slice(4);
+                currentNamedKey = null;
+                els.modeSelect.value = "ligature";
+                els.charInput.value = key;
+                loadLigatureFromKey(key);
+            }
         });
 
         els.charsJsonFile.addEventListener("change", async () => {
@@ -1297,17 +1536,15 @@ Notes:
             await loadJsonText(text, file.name);
         });
 
-        // Init
         const savedTheme = localStorage.getItem("defontGlyphTheme");
         if (savedTheme) setTheme(savedTheme);
 
         applyCellSize();
         applyGridLines();
         setCols(3);
-        setCharFromInput();
+        setTokenFromInput();
         render();
-
-        // auto-load JSON on page load
+        refreshLoadStatus(loadNote);
         autoLoadDefaultJson();
     })();
 </script>

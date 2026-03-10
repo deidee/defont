@@ -4,10 +4,10 @@
 export const charsData = {
   "format": "deidee-chars",
   "version": 1,
-  "generated_at": "2026-03-10T12:54:27.582498+00:00",
+  "generated_at": "2026-03-10T15:36:52.225838+00:00",
   "source": "C:/xampp/htdocs/deidee/defont/data/chars.php",
   "meta": {
-    "glyph_count": 230,
+    "glyph_count": 232,
     "keys_in_order": [
       ".notdef",
       "32",
@@ -112,6 +112,7 @@ export const charsData = {
       "247",
       "252",
       "305",
+      "932",
       "1025",
       "1026",
       "1040",
@@ -238,7 +239,11 @@ export const charsData = {
       "9860",
       "9861",
       "9993",
-      "10013"
+      "10013",
+      "ΤΤΤ"
+    ],
+    "ligature_keys": [
+      "ΤΤΤ"
     ],
     "distinct_widths": [
       1,
@@ -256,7 +261,8 @@ export const charsData = {
     "notes": [
       "glyph rows are row-major (top-to-bottom), matching the PHP arrays",
       "empty glyphs (e.g. space) have width/height = null because the PHP source stores no dimensions",
-      "JSON object keys are strings; codepoint glyphs also include numeric 'codepoint'"
+      "JSON object keys are strings; codepoint glyphs also include numeric 'codepoint'",
+      "ligatures are detected as string keys with len(key) > 1 (excluding '.notdef')"
     ]
   },
   "glyphs": {
@@ -349,7 +355,12 @@ export const charsData = {
       },
       "codepoint": null,
       "unicode": null,
-      "char": null
+      "char": null,
+      "is_ligature": false,
+      "sequence": null,
+      "sequence_chars": null,
+      "sequence_codepoints": null,
+      "sequence_unicode": null
     },
     "32": {
       "key": 32,
@@ -361,7 +372,8 @@ export const charsData = {
       "bbox": null,
       "codepoint": 32,
       "unicode": "U+0020",
-      "char": " "
+      "char": " ",
+      "is_ligature": false
     },
     "33": {
       "key": 33,
@@ -416,7 +428,8 @@ export const charsData = {
       },
       "codepoint": 33,
       "unicode": "U+0021",
-      "char": "!"
+      "char": "!",
+      "is_ligature": false
     },
     "34": {
       "key": 34,
@@ -507,7 +520,8 @@ export const charsData = {
       },
       "codepoint": 34,
       "unicode": "U+0022",
-      "char": "\""
+      "char": "\"",
+      "is_ligature": false
     },
     "35": {
       "key": 35,
@@ -634,7 +648,8 @@ export const charsData = {
       },
       "codepoint": 35,
       "unicode": "U+0023",
-      "char": "#"
+      "char": "#",
+      "is_ligature": false
     },
     "36": {
       "key": 36,
@@ -761,7 +776,8 @@ export const charsData = {
       },
       "codepoint": 36,
       "unicode": "U+0024",
-      "char": "$"
+      "char": "$",
+      "is_ligature": false
     },
     "37": {
       "key": 37,
@@ -888,7 +904,8 @@ export const charsData = {
       },
       "codepoint": 37,
       "unicode": "U+0025",
-      "char": "%"
+      "char": "%",
+      "is_ligature": false
     },
     "38": {
       "key": 38,
@@ -1033,7 +1050,8 @@ export const charsData = {
       },
       "codepoint": 38,
       "unicode": "U+0026",
-      "char": "&"
+      "char": "&",
+      "is_ligature": false
     },
     "39": {
       "key": 39,
@@ -1088,7 +1106,8 @@ export const charsData = {
       },
       "codepoint": 39,
       "unicode": "U+0027",
-      "char": "'"
+      "char": "'",
+      "is_ligature": false
     },
     "40": {
       "key": 40,
@@ -1179,7 +1198,8 @@ export const charsData = {
       },
       "codepoint": 40,
       "unicode": "U+0028",
-      "char": "("
+      "char": "(",
+      "is_ligature": false
     },
     "41": {
       "key": 41,
@@ -1270,7 +1290,8 @@ export const charsData = {
       },
       "codepoint": 41,
       "unicode": "U+0029",
-      "char": ")"
+      "char": ")",
+      "is_ligature": false
     },
     "43": {
       "key": 43,
@@ -1361,7 +1382,8 @@ export const charsData = {
       },
       "codepoint": 43,
       "unicode": "U+002B",
-      "char": "+"
+      "char": "+",
+      "is_ligature": false
     },
     "44": {
       "key": 44,
@@ -1416,7 +1438,8 @@ export const charsData = {
       },
       "codepoint": 44,
       "unicode": "U+002C",
-      "char": ","
+      "char": ",",
+      "is_ligature": false
     },
     "45": {
       "key": 45,
@@ -1507,7 +1530,8 @@ export const charsData = {
       },
       "codepoint": 45,
       "unicode": "U+002D",
-      "char": "-"
+      "char": "-",
+      "is_ligature": false
     },
     "46": {
       "key": 46,
@@ -1562,7 +1586,8 @@ export const charsData = {
       },
       "codepoint": 46,
       "unicode": "U+002E",
-      "char": "."
+      "char": ".",
+      "is_ligature": false
     },
     "47": {
       "key": 47,
@@ -1689,7 +1714,8 @@ export const charsData = {
       },
       "codepoint": 47,
       "unicode": "U+002F",
-      "char": "/"
+      "char": "/",
+      "is_ligature": false
     },
     "48": {
       "key": 48,
@@ -1780,7 +1806,8 @@ export const charsData = {
       },
       "codepoint": 48,
       "unicode": "U+0030",
-      "char": "0"
+      "char": "0",
+      "is_ligature": false
     },
     "49": {
       "key": 49,
@@ -1871,7 +1898,8 @@ export const charsData = {
       },
       "codepoint": 49,
       "unicode": "U+0031",
-      "char": "1"
+      "char": "1",
+      "is_ligature": false
     },
     "50": {
       "key": 50,
@@ -1962,7 +1990,8 @@ export const charsData = {
       },
       "codepoint": 50,
       "unicode": "U+0032",
-      "char": "2"
+      "char": "2",
+      "is_ligature": false
     },
     "51": {
       "key": 51,
@@ -2053,7 +2082,8 @@ export const charsData = {
       },
       "codepoint": 51,
       "unicode": "U+0033",
-      "char": "3"
+      "char": "3",
+      "is_ligature": false
     },
     "52": {
       "key": 52,
@@ -2144,7 +2174,8 @@ export const charsData = {
       },
       "codepoint": 52,
       "unicode": "U+0034",
-      "char": "4"
+      "char": "4",
+      "is_ligature": false
     },
     "53": {
       "key": 53,
@@ -2235,7 +2266,8 @@ export const charsData = {
       },
       "codepoint": 53,
       "unicode": "U+0035",
-      "char": "5"
+      "char": "5",
+      "is_ligature": false
     },
     "54": {
       "key": 54,
@@ -2326,7 +2358,8 @@ export const charsData = {
       },
       "codepoint": 54,
       "unicode": "U+0036",
-      "char": "6"
+      "char": "6",
+      "is_ligature": false
     },
     "55": {
       "key": 55,
@@ -2417,7 +2450,8 @@ export const charsData = {
       },
       "codepoint": 55,
       "unicode": "U+0037",
-      "char": "7"
+      "char": "7",
+      "is_ligature": false
     },
     "56": {
       "key": 56,
@@ -2508,7 +2542,8 @@ export const charsData = {
       },
       "codepoint": 56,
       "unicode": "U+0038",
-      "char": "8"
+      "char": "8",
+      "is_ligature": false
     },
     "57": {
       "key": 57,
@@ -2599,7 +2634,8 @@ export const charsData = {
       },
       "codepoint": 57,
       "unicode": "U+0039",
-      "char": "9"
+      "char": "9",
+      "is_ligature": false
     },
     "58": {
       "key": 58,
@@ -2654,7 +2690,8 @@ export const charsData = {
       },
       "codepoint": 58,
       "unicode": "U+003A",
-      "char": ":"
+      "char": ":",
+      "is_ligature": false
     },
     "59": {
       "key": 59,
@@ -2709,7 +2746,8 @@ export const charsData = {
       },
       "codepoint": 59,
       "unicode": "U+003B",
-      "char": ";"
+      "char": ";",
+      "is_ligature": false
     },
     "60": {
       "key": 60,
@@ -2800,7 +2838,8 @@ export const charsData = {
       },
       "codepoint": 60,
       "unicode": "U+003C",
-      "char": "<"
+      "char": "<",
+      "is_ligature": false
     },
     "61": {
       "key": 61,
@@ -2891,7 +2930,8 @@ export const charsData = {
       },
       "codepoint": 61,
       "unicode": "U+003D",
-      "char": "="
+      "char": "=",
+      "is_ligature": false
     },
     "62": {
       "key": 62,
@@ -2982,7 +3022,8 @@ export const charsData = {
       },
       "codepoint": 62,
       "unicode": "U+003E",
-      "char": ">"
+      "char": ">",
+      "is_ligature": false
     },
     "63": {
       "key": 63,
@@ -3073,7 +3114,8 @@ export const charsData = {
       },
       "codepoint": 63,
       "unicode": "U+003F",
-      "char": "?"
+      "char": "?",
+      "is_ligature": false
     },
     "64": {
       "key": 64,
@@ -3236,7 +3278,8 @@ export const charsData = {
       },
       "codepoint": 64,
       "unicode": "U+0040",
-      "char": "@"
+      "char": "@",
+      "is_ligature": false
     },
     "65": {
       "key": 65,
@@ -3327,7 +3370,8 @@ export const charsData = {
       },
       "codepoint": 65,
       "unicode": "U+0041",
-      "char": "A"
+      "char": "A",
+      "is_ligature": false
     },
     "66": {
       "key": 66,
@@ -3418,7 +3462,8 @@ export const charsData = {
       },
       "codepoint": 66,
       "unicode": "U+0042",
-      "char": "B"
+      "char": "B",
+      "is_ligature": false
     },
     "67": {
       "key": 67,
@@ -3509,7 +3554,8 @@ export const charsData = {
       },
       "codepoint": 67,
       "unicode": "U+0043",
-      "char": "C"
+      "char": "C",
+      "is_ligature": false
     },
     "68": {
       "key": 68,
@@ -3600,7 +3646,8 @@ export const charsData = {
       },
       "codepoint": 68,
       "unicode": "U+0044",
-      "char": "D"
+      "char": "D",
+      "is_ligature": false
     },
     "69": {
       "key": 69,
@@ -3691,7 +3738,8 @@ export const charsData = {
       },
       "codepoint": 69,
       "unicode": "U+0045",
-      "char": "E"
+      "char": "E",
+      "is_ligature": false
     },
     "70": {
       "key": 70,
@@ -3782,7 +3830,8 @@ export const charsData = {
       },
       "codepoint": 70,
       "unicode": "U+0046",
-      "char": "F"
+      "char": "F",
+      "is_ligature": false
     },
     "71": {
       "key": 71,
@@ -3873,7 +3922,8 @@ export const charsData = {
       },
       "codepoint": 71,
       "unicode": "U+0047",
-      "char": "G"
+      "char": "G",
+      "is_ligature": false
     },
     "72": {
       "key": 72,
@@ -3964,7 +4014,8 @@ export const charsData = {
       },
       "codepoint": 72,
       "unicode": "U+0048",
-      "char": "H"
+      "char": "H",
+      "is_ligature": false
     },
     "73": {
       "key": 73,
@@ -4055,7 +4106,8 @@ export const charsData = {
       },
       "codepoint": 73,
       "unicode": "U+0049",
-      "char": "I"
+      "char": "I",
+      "is_ligature": false
     },
     "74": {
       "key": 74,
@@ -4146,7 +4198,8 @@ export const charsData = {
       },
       "codepoint": 74,
       "unicode": "U+004A",
-      "char": "J"
+      "char": "J",
+      "is_ligature": false
     },
     "75": {
       "key": 75,
@@ -4237,7 +4290,8 @@ export const charsData = {
       },
       "codepoint": 75,
       "unicode": "U+004B",
-      "char": "K"
+      "char": "K",
+      "is_ligature": false
     },
     "76": {
       "key": 76,
@@ -4328,7 +4382,8 @@ export const charsData = {
       },
       "codepoint": 76,
       "unicode": "U+004C",
-      "char": "L"
+      "char": "L",
+      "is_ligature": false
     },
     "77": {
       "key": 77,
@@ -4455,7 +4510,8 @@ export const charsData = {
       },
       "codepoint": 77,
       "unicode": "U+004D",
-      "char": "M"
+      "char": "M",
+      "is_ligature": false
     },
     "78": {
       "key": 78,
@@ -4546,7 +4602,8 @@ export const charsData = {
       },
       "codepoint": 78,
       "unicode": "U+004E",
-      "char": "N"
+      "char": "N",
+      "is_ligature": false
     },
     "79": {
       "key": 79,
@@ -4637,7 +4694,8 @@ export const charsData = {
       },
       "codepoint": 79,
       "unicode": "U+004F",
-      "char": "O"
+      "char": "O",
+      "is_ligature": false
     },
     "80": {
       "key": 80,
@@ -4728,7 +4786,8 @@ export const charsData = {
       },
       "codepoint": 80,
       "unicode": "U+0050",
-      "char": "P"
+      "char": "P",
+      "is_ligature": false
     },
     "81": {
       "key": 81,
@@ -4819,7 +4878,8 @@ export const charsData = {
       },
       "codepoint": 81,
       "unicode": "U+0051",
-      "char": "Q"
+      "char": "Q",
+      "is_ligature": false
     },
     "82": {
       "key": 82,
@@ -4910,7 +4970,8 @@ export const charsData = {
       },
       "codepoint": 82,
       "unicode": "U+0052",
-      "char": "R"
+      "char": "R",
+      "is_ligature": false
     },
     "83": {
       "key": 83,
@@ -5001,7 +5062,8 @@ export const charsData = {
       },
       "codepoint": 83,
       "unicode": "U+0053",
-      "char": "S"
+      "char": "S",
+      "is_ligature": false
     },
     "84": {
       "key": 84,
@@ -5092,7 +5154,8 @@ export const charsData = {
       },
       "codepoint": 84,
       "unicode": "U+0054",
-      "char": "T"
+      "char": "T",
+      "is_ligature": false
     },
     "85": {
       "key": 85,
@@ -5183,7 +5246,8 @@ export const charsData = {
       },
       "codepoint": 85,
       "unicode": "U+0055",
-      "char": "U"
+      "char": "U",
+      "is_ligature": false
     },
     "86": {
       "key": 86,
@@ -5274,7 +5338,8 @@ export const charsData = {
       },
       "codepoint": 86,
       "unicode": "U+0056",
-      "char": "V"
+      "char": "V",
+      "is_ligature": false
     },
     "87": {
       "key": 87,
@@ -5401,7 +5466,8 @@ export const charsData = {
       },
       "codepoint": 87,
       "unicode": "U+0057",
-      "char": "W"
+      "char": "W",
+      "is_ligature": false
     },
     "88": {
       "key": 88,
@@ -5492,7 +5558,8 @@ export const charsData = {
       },
       "codepoint": 88,
       "unicode": "U+0058",
-      "char": "X"
+      "char": "X",
+      "is_ligature": false
     },
     "89": {
       "key": 89,
@@ -5583,7 +5650,8 @@ export const charsData = {
       },
       "codepoint": 89,
       "unicode": "U+0059",
-      "char": "Y"
+      "char": "Y",
+      "is_ligature": false
     },
     "90": {
       "key": 90,
@@ -5674,7 +5742,8 @@ export const charsData = {
       },
       "codepoint": 90,
       "unicode": "U+005A",
-      "char": "Z"
+      "char": "Z",
+      "is_ligature": false
     },
     "91": {
       "key": 91,
@@ -5747,7 +5816,8 @@ export const charsData = {
       },
       "codepoint": 91,
       "unicode": "U+005B",
-      "char": "["
+      "char": "[",
+      "is_ligature": false
     },
     "92": {
       "key": 92,
@@ -5874,7 +5944,8 @@ export const charsData = {
       },
       "codepoint": 92,
       "unicode": "U+005C",
-      "char": "\\"
+      "char": "\\",
+      "is_ligature": false
     },
     "93": {
       "key": 93,
@@ -5947,7 +6018,8 @@ export const charsData = {
       },
       "codepoint": 93,
       "unicode": "U+005D",
-      "char": "]"
+      "char": "]",
+      "is_ligature": false
     },
     "94": {
       "key": 94,
@@ -6038,7 +6110,8 @@ export const charsData = {
       },
       "codepoint": 94,
       "unicode": "U+005E",
-      "char": "^"
+      "char": "^",
+      "is_ligature": false
     },
     "95": {
       "key": 95,
@@ -6129,7 +6202,8 @@ export const charsData = {
       },
       "codepoint": 95,
       "unicode": "U+005F",
-      "char": "_"
+      "char": "_",
+      "is_ligature": false
     },
     "96": {
       "key": 96,
@@ -6202,7 +6276,8 @@ export const charsData = {
       },
       "codepoint": 96,
       "unicode": "U+0060",
-      "char": "`"
+      "char": "`",
+      "is_ligature": false
     },
     "97": {
       "key": 97,
@@ -6293,7 +6368,8 @@ export const charsData = {
       },
       "codepoint": 97,
       "unicode": "U+0061",
-      "char": "a"
+      "char": "a",
+      "is_ligature": false
     },
     "98": {
       "key": 98,
@@ -6384,7 +6460,8 @@ export const charsData = {
       },
       "codepoint": 98,
       "unicode": "U+0062",
-      "char": "b"
+      "char": "b",
+      "is_ligature": false
     },
     "99": {
       "key": 99,
@@ -6475,7 +6552,8 @@ export const charsData = {
       },
       "codepoint": 99,
       "unicode": "U+0063",
-      "char": "c"
+      "char": "c",
+      "is_ligature": false
     },
     "100": {
       "key": 100,
@@ -6566,7 +6644,8 @@ export const charsData = {
       },
       "codepoint": 100,
       "unicode": "U+0064",
-      "char": "d"
+      "char": "d",
+      "is_ligature": false
     },
     "101": {
       "key": 101,
@@ -6657,7 +6736,8 @@ export const charsData = {
       },
       "codepoint": 101,
       "unicode": "U+0065",
-      "char": "e"
+      "char": "e",
+      "is_ligature": false
     },
     "102": {
       "key": 102,
@@ -6748,7 +6828,8 @@ export const charsData = {
       },
       "codepoint": 102,
       "unicode": "U+0066",
-      "char": "f"
+      "char": "f",
+      "is_ligature": false
     },
     "103": {
       "key": 103,
@@ -6839,7 +6920,8 @@ export const charsData = {
       },
       "codepoint": 103,
       "unicode": "U+0067",
-      "char": "g"
+      "char": "g",
+      "is_ligature": false
     },
     "104": {
       "key": 104,
@@ -6930,7 +7012,8 @@ export const charsData = {
       },
       "codepoint": 104,
       "unicode": "U+0068",
-      "char": "h"
+      "char": "h",
+      "is_ligature": false
     },
     "105": {
       "key": 105,
@@ -6985,7 +7068,8 @@ export const charsData = {
       },
       "codepoint": 105,
       "unicode": "U+0069",
-      "char": "i"
+      "char": "i",
+      "is_ligature": false
     },
     "106": {
       "key": 106,
@@ -7040,7 +7124,8 @@ export const charsData = {
       },
       "codepoint": 106,
       "unicode": "U+006A",
-      "char": "j"
+      "char": "j",
+      "is_ligature": false
     },
     "107": {
       "key": 107,
@@ -7131,7 +7216,8 @@ export const charsData = {
       },
       "codepoint": 107,
       "unicode": "U+006B",
-      "char": "k"
+      "char": "k",
+      "is_ligature": false
     },
     "108": {
       "key": 108,
@@ -7186,7 +7272,8 @@ export const charsData = {
       },
       "codepoint": 108,
       "unicode": "U+006C",
-      "char": "l"
+      "char": "l",
+      "is_ligature": false
     },
     "109": {
       "key": 109,
@@ -7313,7 +7400,8 @@ export const charsData = {
       },
       "codepoint": 109,
       "unicode": "U+006D",
-      "char": "m"
+      "char": "m",
+      "is_ligature": false
     },
     "110": {
       "key": 110,
@@ -7404,7 +7492,8 @@ export const charsData = {
       },
       "codepoint": 110,
       "unicode": "U+006E",
-      "char": "n"
+      "char": "n",
+      "is_ligature": false
     },
     "111": {
       "key": 111,
@@ -7495,7 +7584,8 @@ export const charsData = {
       },
       "codepoint": 111,
       "unicode": "U+006F",
-      "char": "o"
+      "char": "o",
+      "is_ligature": false
     },
     "112": {
       "key": 112,
@@ -7586,7 +7676,8 @@ export const charsData = {
       },
       "codepoint": 112,
       "unicode": "U+0070",
-      "char": "p"
+      "char": "p",
+      "is_ligature": false
     },
     "113": {
       "key": 113,
@@ -7677,7 +7768,8 @@ export const charsData = {
       },
       "codepoint": 113,
       "unicode": "U+0071",
-      "char": "q"
+      "char": "q",
+      "is_ligature": false
     },
     "114": {
       "key": 114,
@@ -7768,7 +7860,8 @@ export const charsData = {
       },
       "codepoint": 114,
       "unicode": "U+0072",
-      "char": "r"
+      "char": "r",
+      "is_ligature": false
     },
     "115": {
       "key": 115,
@@ -7859,7 +7952,8 @@ export const charsData = {
       },
       "codepoint": 115,
       "unicode": "U+0073",
-      "char": "s"
+      "char": "s",
+      "is_ligature": false
     },
     "116": {
       "key": 116,
@@ -7950,7 +8044,8 @@ export const charsData = {
       },
       "codepoint": 116,
       "unicode": "U+0074",
-      "char": "t"
+      "char": "t",
+      "is_ligature": false
     },
     "117": {
       "key": 117,
@@ -8041,7 +8136,8 @@ export const charsData = {
       },
       "codepoint": 117,
       "unicode": "U+0075",
-      "char": "u"
+      "char": "u",
+      "is_ligature": false
     },
     "118": {
       "key": 118,
@@ -8132,7 +8228,8 @@ export const charsData = {
       },
       "codepoint": 118,
       "unicode": "U+0076",
-      "char": "v"
+      "char": "v",
+      "is_ligature": false
     },
     "119": {
       "key": 119,
@@ -8259,7 +8356,8 @@ export const charsData = {
       },
       "codepoint": 119,
       "unicode": "U+0077",
-      "char": "w"
+      "char": "w",
+      "is_ligature": false
     },
     "120": {
       "key": 120,
@@ -8350,7 +8448,8 @@ export const charsData = {
       },
       "codepoint": 120,
       "unicode": "U+0078",
-      "char": "x"
+      "char": "x",
+      "is_ligature": false
     },
     "121": {
       "key": 121,
@@ -8441,7 +8540,8 @@ export const charsData = {
       },
       "codepoint": 121,
       "unicode": "U+0079",
-      "char": "y"
+      "char": "y",
+      "is_ligature": false
     },
     "122": {
       "key": 122,
@@ -8532,7 +8632,8 @@ export const charsData = {
       },
       "codepoint": 122,
       "unicode": "U+007A",
-      "char": "z"
+      "char": "z",
+      "is_ligature": false
     },
     "123": {
       "key": 123,
@@ -8623,7 +8724,8 @@ export const charsData = {
       },
       "codepoint": 123,
       "unicode": "U+007B",
-      "char": "{"
+      "char": "{",
+      "is_ligature": false
     },
     "124": {
       "key": 124,
@@ -8678,7 +8780,8 @@ export const charsData = {
       },
       "codepoint": 124,
       "unicode": "U+007C",
-      "char": "|"
+      "char": "|",
+      "is_ligature": false
     },
     "125": {
       "key": 125,
@@ -8769,7 +8872,8 @@ export const charsData = {
       },
       "codepoint": 125,
       "unicode": "U+007D",
-      "char": "}"
+      "char": "}",
+      "is_ligature": false
     },
     "167": {
       "key": 167,
@@ -8860,7 +8964,8 @@ export const charsData = {
       },
       "codepoint": 167,
       "unicode": "U+00A7",
-      "char": "§"
+      "char": "§",
+      "is_ligature": false
     },
     "169": {
       "key": 169,
@@ -9005,7 +9110,8 @@ export const charsData = {
       },
       "codepoint": 169,
       "unicode": "U+00A9",
-      "char": "©"
+      "char": "©",
+      "is_ligature": false
     },
     "177": {
       "key": 177,
@@ -9096,7 +9202,8 @@ export const charsData = {
       },
       "codepoint": 177,
       "unicode": "U+00B1",
-      "char": "±"
+      "char": "±",
+      "is_ligature": false
     },
     "235": {
       "key": 235,
@@ -9187,7 +9294,8 @@ export const charsData = {
       },
       "codepoint": 235,
       "unicode": "U+00EB",
-      "char": "ë"
+      "char": "ë",
+      "is_ligature": false
     },
     "239": {
       "key": 239,
@@ -9278,7 +9386,8 @@ export const charsData = {
       },
       "codepoint": 239,
       "unicode": "U+00EF",
-      "char": "ï"
+      "char": "ï",
+      "is_ligature": false
     },
     "246": {
       "key": 246,
@@ -9369,7 +9478,8 @@ export const charsData = {
       },
       "codepoint": 246,
       "unicode": "U+00F6",
-      "char": "ö"
+      "char": "ö",
+      "is_ligature": false
     },
     "247": {
       "key": 247,
@@ -9460,7 +9570,8 @@ export const charsData = {
       },
       "codepoint": 247,
       "unicode": "U+00F7",
-      "char": "÷"
+      "char": "÷",
+      "is_ligature": false
     },
     "252": {
       "key": 252,
@@ -9551,7 +9662,8 @@ export const charsData = {
       },
       "codepoint": 252,
       "unicode": "U+00FC",
-      "char": "ü"
+      "char": "ü",
+      "is_ligature": false
     },
     "305": {
       "key": 305,
@@ -9606,7 +9718,136 @@ export const charsData = {
       },
       "codepoint": 305,
       "unicode": "U+0131",
-      "char": "ı"
+      "char": "ı",
+      "is_ligature": false
+    },
+    "932": {
+      "key": 932,
+      "width": 5,
+      "height": 9,
+      "data": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        1,
+        1,
+        1,
+        1,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        [
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        [
+          0,
+          0,
+          1,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          1,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          1,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          1,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      ],
+      "active_pixels": 9,
+      "bbox": {
+        "x": 0,
+        "y": 2,
+        "width": 5,
+        "height": 5
+      },
+      "codepoint": 932,
+      "unicode": "U+03A4",
+      "char": "Τ",
+      "is_ligature": false
     },
     "1025": {
       "key": 1025,
@@ -9697,7 +9938,8 @@ export const charsData = {
       },
       "codepoint": 1025,
       "unicode": "U+0401",
-      "char": "Ё"
+      "char": "Ё",
+      "is_ligature": false
     },
     "1026": {
       "key": 1026,
@@ -9824,7 +10066,8 @@ export const charsData = {
       },
       "codepoint": 1026,
       "unicode": "U+0402",
-      "char": "Ђ"
+      "char": "Ђ",
+      "is_ligature": false
     },
     "1040": {
       "key": 1040,
@@ -9915,7 +10158,8 @@ export const charsData = {
       },
       "codepoint": 1040,
       "unicode": "U+0410",
-      "char": "А"
+      "char": "А",
+      "is_ligature": false
     },
     "1041": {
       "key": 1041,
@@ -10006,7 +10250,8 @@ export const charsData = {
       },
       "codepoint": 1041,
       "unicode": "U+0411",
-      "char": "Б"
+      "char": "Б",
+      "is_ligature": false
     },
     "1042": {
       "key": 1042,
@@ -10097,7 +10342,8 @@ export const charsData = {
       },
       "codepoint": 1042,
       "unicode": "U+0412",
-      "char": "В"
+      "char": "В",
+      "is_ligature": false
     },
     "1043": {
       "key": 1043,
@@ -10188,7 +10434,8 @@ export const charsData = {
       },
       "codepoint": 1043,
       "unicode": "U+0413",
-      "char": "Г"
+      "char": "Г",
+      "is_ligature": false
     },
     "1044": {
       "key": 1044,
@@ -10297,7 +10544,8 @@ export const charsData = {
       },
       "codepoint": 1044,
       "unicode": "U+0414",
-      "char": "Д"
+      "char": "Д",
+      "is_ligature": false
     },
     "1045": {
       "key": 1045,
@@ -10388,7 +10636,8 @@ export const charsData = {
       },
       "codepoint": 1045,
       "unicode": "U+0415",
-      "char": "Е"
+      "char": "Е",
+      "is_ligature": false
     },
     "1046": {
       "key": 1046,
@@ -10515,7 +10764,8 @@ export const charsData = {
       },
       "codepoint": 1046,
       "unicode": "U+0416",
-      "char": "Ж"
+      "char": "Ж",
+      "is_ligature": false
     },
     "1047": {
       "key": 1047,
@@ -10606,7 +10856,8 @@ export const charsData = {
       },
       "codepoint": 1047,
       "unicode": "U+0417",
-      "char": "З"
+      "char": "З",
+      "is_ligature": false
     },
     "1048": {
       "key": 1048,
@@ -10715,7 +10966,8 @@ export const charsData = {
       },
       "codepoint": 1048,
       "unicode": "U+0418",
-      "char": "И"
+      "char": "И",
+      "is_ligature": false
     },
     "1049": {
       "key": 1049,
@@ -10824,7 +11076,8 @@ export const charsData = {
       },
       "codepoint": 1049,
       "unicode": "U+0419",
-      "char": "Й"
+      "char": "Й",
+      "is_ligature": false
     },
     "1050": {
       "key": 1050,
@@ -10915,7 +11168,8 @@ export const charsData = {
       },
       "codepoint": 1050,
       "unicode": "U+041A",
-      "char": "К"
+      "char": "К",
+      "is_ligature": false
     },
     "1051": {
       "key": 1051,
@@ -11006,7 +11260,8 @@ export const charsData = {
       },
       "codepoint": 1051,
       "unicode": "U+041B",
-      "char": "Л"
+      "char": "Л",
+      "is_ligature": false
     },
     "1052": {
       "key": 1052,
@@ -11133,7 +11388,8 @@ export const charsData = {
       },
       "codepoint": 1052,
       "unicode": "U+041C",
-      "char": "М"
+      "char": "М",
+      "is_ligature": false
     },
     "1053": {
       "key": 1053,
@@ -11224,7 +11480,8 @@ export const charsData = {
       },
       "codepoint": 1053,
       "unicode": "U+041D",
-      "char": "Н"
+      "char": "Н",
+      "is_ligature": false
     },
     "1054": {
       "key": 1054,
@@ -11315,7 +11572,8 @@ export const charsData = {
       },
       "codepoint": 1054,
       "unicode": "U+041E",
-      "char": "О"
+      "char": "О",
+      "is_ligature": false
     },
     "1055": {
       "key": 1055,
@@ -11406,7 +11664,8 @@ export const charsData = {
       },
       "codepoint": 1055,
       "unicode": "U+041F",
-      "char": "П"
+      "char": "П",
+      "is_ligature": false
     },
     "1056": {
       "key": 1056,
@@ -11497,7 +11756,8 @@ export const charsData = {
       },
       "codepoint": 1056,
       "unicode": "U+0420",
-      "char": "Р"
+      "char": "Р",
+      "is_ligature": false
     },
     "1057": {
       "key": 1057,
@@ -11588,7 +11848,8 @@ export const charsData = {
       },
       "codepoint": 1057,
       "unicode": "U+0421",
-      "char": "С"
+      "char": "С",
+      "is_ligature": false
     },
     "1058": {
       "key": 1058,
@@ -11679,7 +11940,8 @@ export const charsData = {
       },
       "codepoint": 1058,
       "unicode": "U+0422",
-      "char": "Т"
+      "char": "Т",
+      "is_ligature": false
     },
     "1059": {
       "key": 1059,
@@ -11770,7 +12032,8 @@ export const charsData = {
       },
       "codepoint": 1059,
       "unicode": "U+0423",
-      "char": "У"
+      "char": "У",
+      "is_ligature": false
     },
     "1060": {
       "key": 1060,
@@ -11897,7 +12160,8 @@ export const charsData = {
       },
       "codepoint": 1060,
       "unicode": "U+0424",
-      "char": "Ф"
+      "char": "Ф",
+      "is_ligature": false
     },
     "1061": {
       "key": 1061,
@@ -11988,7 +12252,8 @@ export const charsData = {
       },
       "codepoint": 1061,
       "unicode": "U+0425",
-      "char": "Х"
+      "char": "Х",
+      "is_ligature": false
     },
     "1062": {
       "key": 1062,
@@ -12097,7 +12362,8 @@ export const charsData = {
       },
       "codepoint": 1062,
       "unicode": "U+0426",
-      "char": "Ц"
+      "char": "Ц",
+      "is_ligature": false
     },
     "1063": {
       "key": 1063,
@@ -12188,7 +12454,8 @@ export const charsData = {
       },
       "codepoint": 1063,
       "unicode": "U+0427",
-      "char": "Ч"
+      "char": "Ч",
+      "is_ligature": false
     },
     "1064": {
       "key": 1064,
@@ -12315,7 +12582,8 @@ export const charsData = {
       },
       "codepoint": 1064,
       "unicode": "U+0428",
-      "char": "Ш"
+      "char": "Ш",
+      "is_ligature": false
     },
     "1065": {
       "key": 1065,
@@ -12442,7 +12710,8 @@ export const charsData = {
       },
       "codepoint": 1065,
       "unicode": "U+0429",
-      "char": "Щ"
+      "char": "Щ",
+      "is_ligature": false
     },
     "1066": {
       "key": 1066,
@@ -12551,7 +12820,8 @@ export const charsData = {
       },
       "codepoint": 1066,
       "unicode": "U+042A",
-      "char": "Ъ"
+      "char": "Ъ",
+      "is_ligature": false
     },
     "1067": {
       "key": 1067,
@@ -12678,7 +12948,8 @@ export const charsData = {
       },
       "codepoint": 1067,
       "unicode": "U+042B",
-      "char": "Ы"
+      "char": "Ы",
+      "is_ligature": false
     },
     "1068": {
       "key": 1068,
@@ -12769,7 +13040,8 @@ export const charsData = {
       },
       "codepoint": 1068,
       "unicode": "U+042C",
-      "char": "Ь"
+      "char": "Ь",
+      "is_ligature": false
     },
     "1069": {
       "key": 1069,
@@ -12878,7 +13150,8 @@ export const charsData = {
       },
       "codepoint": 1069,
       "unicode": "U+042D",
-      "char": "Э"
+      "char": "Э",
+      "is_ligature": false
     },
     "1070": {
       "key": 1070,
@@ -13005,7 +13278,8 @@ export const charsData = {
       },
       "codepoint": 1070,
       "unicode": "U+042E",
-      "char": "Ю"
+      "char": "Ю",
+      "is_ligature": false
     },
     "1071": {
       "key": 1071,
@@ -13114,7 +13388,8 @@ export const charsData = {
       },
       "codepoint": 1071,
       "unicode": "U+042F",
-      "char": "Я"
+      "char": "Я",
+      "is_ligature": false
     },
     "1488": {
       "key": 1488,
@@ -13241,7 +13516,8 @@ export const charsData = {
       },
       "codepoint": 1488,
       "unicode": "U+05D0",
-      "char": "א"
+      "char": "א",
+      "is_ligature": false
     },
     "1489": {
       "key": 1489,
@@ -13368,7 +13644,8 @@ export const charsData = {
       },
       "codepoint": 1489,
       "unicode": "U+05D1",
-      "char": "ב"
+      "char": "ב",
+      "is_ligature": false
     },
     "1490": {
       "key": 1490,
@@ -13495,7 +13772,8 @@ export const charsData = {
       },
       "codepoint": 1490,
       "unicode": "U+05D2",
-      "char": "ג"
+      "char": "ג",
+      "is_ligature": false
     },
     "1491": {
       "key": 1491,
@@ -13622,7 +13900,8 @@ export const charsData = {
       },
       "codepoint": 1491,
       "unicode": "U+05D3",
-      "char": "ד"
+      "char": "ד",
+      "is_ligature": false
     },
     "1492": {
       "key": 1492,
@@ -13749,7 +14028,8 @@ export const charsData = {
       },
       "codepoint": 1492,
       "unicode": "U+05D4",
-      "char": "ה"
+      "char": "ה",
+      "is_ligature": false
     },
     "1493": {
       "key": 1493,
@@ -13876,7 +14156,8 @@ export const charsData = {
       },
       "codepoint": 1493,
       "unicode": "U+05D5",
-      "char": "ו"
+      "char": "ו",
+      "is_ligature": false
     },
     "1494": {
       "key": 1494,
@@ -14003,7 +14284,8 @@ export const charsData = {
       },
       "codepoint": 1494,
       "unicode": "U+05D6",
-      "char": "ז"
+      "char": "ז",
+      "is_ligature": false
     },
     "1495": {
       "key": 1495,
@@ -14130,7 +14412,8 @@ export const charsData = {
       },
       "codepoint": 1495,
       "unicode": "U+05D7",
-      "char": "ח"
+      "char": "ח",
+      "is_ligature": false
     },
     "1496": {
       "key": 1496,
@@ -14257,7 +14540,8 @@ export const charsData = {
       },
       "codepoint": 1496,
       "unicode": "U+05D8",
-      "char": "ט"
+      "char": "ט",
+      "is_ligature": false
     },
     "1497": {
       "key": 1497,
@@ -14384,7 +14668,8 @@ export const charsData = {
       },
       "codepoint": 1497,
       "unicode": "U+05D9",
-      "char": "י"
+      "char": "י",
+      "is_ligature": false
     },
     "1499": {
       "key": 1499,
@@ -14511,7 +14796,8 @@ export const charsData = {
       },
       "codepoint": 1499,
       "unicode": "U+05DB",
-      "char": "כ"
+      "char": "כ",
+      "is_ligature": false
     },
     "1498": {
       "key": 1498,
@@ -14638,7 +14924,8 @@ export const charsData = {
       },
       "codepoint": 1498,
       "unicode": "U+05DA",
-      "char": "ך"
+      "char": "ך",
+      "is_ligature": false
     },
     "1500": {
       "key": 1500,
@@ -14765,7 +15052,8 @@ export const charsData = {
       },
       "codepoint": 1500,
       "unicode": "U+05DC",
-      "char": "ל"
+      "char": "ל",
+      "is_ligature": false
     },
     "1502": {
       "key": 1502,
@@ -14892,7 +15180,8 @@ export const charsData = {
       },
       "codepoint": 1502,
       "unicode": "U+05DE",
-      "char": "מ"
+      "char": "מ",
+      "is_ligature": false
     },
     "1501": {
       "key": 1501,
@@ -15019,7 +15308,8 @@ export const charsData = {
       },
       "codepoint": 1501,
       "unicode": "U+05DD",
-      "char": "ם"
+      "char": "ם",
+      "is_ligature": false
     },
     "1504": {
       "key": 1504,
@@ -15146,7 +15436,8 @@ export const charsData = {
       },
       "codepoint": 1504,
       "unicode": "U+05E0",
-      "char": "נ"
+      "char": "נ",
+      "is_ligature": false
     },
     "1503": {
       "key": 1503,
@@ -15273,7 +15564,8 @@ export const charsData = {
       },
       "codepoint": 1503,
       "unicode": "U+05DF",
-      "char": "ן"
+      "char": "ן",
+      "is_ligature": false
     },
     "1505": {
       "key": 1505,
@@ -15400,7 +15692,8 @@ export const charsData = {
       },
       "codepoint": 1505,
       "unicode": "U+05E1",
-      "char": "ס"
+      "char": "ס",
+      "is_ligature": false
     },
     "1506": {
       "key": 1506,
@@ -15527,7 +15820,8 @@ export const charsData = {
       },
       "codepoint": 1506,
       "unicode": "U+05E2",
-      "char": "ע"
+      "char": "ע",
+      "is_ligature": false
     },
     "1508": {
       "key": 1508,
@@ -15654,7 +15948,8 @@ export const charsData = {
       },
       "codepoint": 1508,
       "unicode": "U+05E4",
-      "char": "פ"
+      "char": "פ",
+      "is_ligature": false
     },
     "1507": {
       "key": 1507,
@@ -15781,7 +16076,8 @@ export const charsData = {
       },
       "codepoint": 1507,
       "unicode": "U+05E3",
-      "char": "ף"
+      "char": "ף",
+      "is_ligature": false
     },
     "1510": {
       "key": 1510,
@@ -15908,7 +16204,8 @@ export const charsData = {
       },
       "codepoint": 1510,
       "unicode": "U+05E6",
-      "char": "צ"
+      "char": "צ",
+      "is_ligature": false
     },
     "1509": {
       "key": 1509,
@@ -16035,7 +16332,8 @@ export const charsData = {
       },
       "codepoint": 1509,
       "unicode": "U+05E5",
-      "char": "ץ"
+      "char": "ץ",
+      "is_ligature": false
     },
     "1511": {
       "key": 1511,
@@ -16162,7 +16460,8 @@ export const charsData = {
       },
       "codepoint": 1511,
       "unicode": "U+05E7",
-      "char": "ק"
+      "char": "ק",
+      "is_ligature": false
     },
     "1512": {
       "key": 1512,
@@ -16289,7 +16588,8 @@ export const charsData = {
       },
       "codepoint": 1512,
       "unicode": "U+05E8",
-      "char": "ר"
+      "char": "ר",
+      "is_ligature": false
     },
     "1513": {
       "key": 1513,
@@ -16416,7 +16716,8 @@ export const charsData = {
       },
       "codepoint": 1513,
       "unicode": "U+05E9",
-      "char": "ש"
+      "char": "ש",
+      "is_ligature": false
     },
     "1514": {
       "key": 1514,
@@ -16543,7 +16844,8 @@ export const charsData = {
       },
       "codepoint": 1514,
       "unicode": "U+05EA",
-      "char": "ת"
+      "char": "ת",
+      "is_ligature": false
     },
     "1470": {
       "key": 1470,
@@ -16670,7 +16972,8 @@ export const charsData = {
       },
       "codepoint": 1470,
       "unicode": "U+05BE",
-      "char": "־"
+      "char": "־",
+      "is_ligature": false
     },
     "1523": {
       "key": 1523,
@@ -16797,7 +17100,8 @@ export const charsData = {
       },
       "codepoint": 1523,
       "unicode": "U+05F3",
-      "char": "׳"
+      "char": "׳",
+      "is_ligature": false
     },
     "1524": {
       "key": 1524,
@@ -16924,7 +17228,8 @@ export const charsData = {
       },
       "codepoint": 1524,
       "unicode": "U+05F4",
-      "char": "״"
+      "char": "״",
+      "is_ligature": false
     },
     "1575": {
       "key": 1575,
@@ -17051,7 +17356,8 @@ export const charsData = {
       },
       "codepoint": 1575,
       "unicode": "U+0627",
-      "char": "ا"
+      "char": "ا",
+      "is_ligature": false
     },
     "1576": {
       "key": 1576,
@@ -17178,7 +17484,8 @@ export const charsData = {
       },
       "codepoint": 1576,
       "unicode": "U+0628",
-      "char": "ب"
+      "char": "ب",
+      "is_ligature": false
     },
     "1578": {
       "key": 1578,
@@ -17305,7 +17612,8 @@ export const charsData = {
       },
       "codepoint": 1578,
       "unicode": "U+062A",
-      "char": "ت"
+      "char": "ت",
+      "is_ligature": false
     },
     "1579": {
       "key": 1579,
@@ -17432,7 +17740,8 @@ export const charsData = {
       },
       "codepoint": 1579,
       "unicode": "U+062B",
-      "char": "ث"
+      "char": "ث",
+      "is_ligature": false
     },
     "1581": {
       "key": 1581,
@@ -17559,7 +17868,8 @@ export const charsData = {
       },
       "codepoint": 1581,
       "unicode": "U+062D",
-      "char": "ح"
+      "char": "ح",
+      "is_ligature": false
     },
     "1580": {
       "key": 1580,
@@ -17686,7 +17996,8 @@ export const charsData = {
       },
       "codepoint": 1580,
       "unicode": "U+062C",
-      "char": "ج"
+      "char": "ج",
+      "is_ligature": false
     },
     "1582": {
       "key": 1582,
@@ -17813,7 +18124,8 @@ export const charsData = {
       },
       "codepoint": 1582,
       "unicode": "U+062E",
-      "char": "خ"
+      "char": "خ",
+      "is_ligature": false
     },
     "1583": {
       "key": 1583,
@@ -17940,7 +18252,8 @@ export const charsData = {
       },
       "codepoint": 1583,
       "unicode": "U+062F",
-      "char": "د"
+      "char": "د",
+      "is_ligature": false
     },
     "1585": {
       "key": 1585,
@@ -18067,7 +18380,8 @@ export const charsData = {
       },
       "codepoint": 1585,
       "unicode": "U+0631",
-      "char": "ر"
+      "char": "ر",
+      "is_ligature": false
     },
     "1586": {
       "key": 1586,
@@ -18194,7 +18508,8 @@ export const charsData = {
       },
       "codepoint": 1586,
       "unicode": "U+0632",
-      "char": "ز"
+      "char": "ز",
+      "is_ligature": false
     },
     "1604": {
       "key": 1604,
@@ -18321,7 +18636,8 @@ export const charsData = {
       },
       "codepoint": 1604,
       "unicode": "U+0644",
-      "char": "ل"
+      "char": "ل",
+      "is_ligature": false
     },
     "1605": {
       "key": 1605,
@@ -18448,7 +18764,8 @@ export const charsData = {
       },
       "codepoint": 1605,
       "unicode": "U+0645",
-      "char": "م"
+      "char": "م",
+      "is_ligature": false
     },
     "1606": {
       "key": 1606,
@@ -18575,7 +18892,8 @@ export const charsData = {
       },
       "codepoint": 1606,
       "unicode": "U+0646",
-      "char": "ن"
+      "char": "ن",
+      "is_ligature": false
     },
     "1607": {
       "key": 1607,
@@ -18702,7 +19020,8 @@ export const charsData = {
       },
       "codepoint": 1607,
       "unicode": "U+0647",
-      "char": "ه"
+      "char": "ه",
+      "is_ligature": false
     },
     "1608": {
       "key": 1608,
@@ -18829,7 +19148,8 @@ export const charsData = {
       },
       "codepoint": 1608,
       "unicode": "U+0648",
-      "char": "و"
+      "char": "و",
+      "is_ligature": false
     },
     "1610": {
       "key": 1610,
@@ -18956,7 +19276,8 @@ export const charsData = {
       },
       "codepoint": 1610,
       "unicode": "U+064A",
-      "char": "ي"
+      "char": "ي",
+      "is_ligature": false
     },
     "1577": {
       "key": 1577,
@@ -19083,7 +19404,8 @@ export const charsData = {
       },
       "codepoint": 1577,
       "unicode": "U+0629",
-      "char": "ة"
+      "char": "ة",
+      "is_ligature": false
     },
     "1593": {
       "key": 1593,
@@ -19210,7 +19532,8 @@ export const charsData = {
       },
       "codepoint": 1593,
       "unicode": "U+0639",
-      "char": "ع"
+      "char": "ع",
+      "is_ligature": false
     },
     "1600": {
       "key": 1600,
@@ -19337,7 +19660,8 @@ export const charsData = {
       },
       "codepoint": 1600,
       "unicode": "U+0640",
-      "char": "ـ"
+      "char": "ـ",
+      "is_ligature": false
     },
     "1548": {
       "key": 1548,
@@ -19464,7 +19788,8 @@ export const charsData = {
       },
       "codepoint": 1548,
       "unicode": "U+060C",
-      "char": "،"
+      "char": "،",
+      "is_ligature": false
     },
     "1567": {
       "key": 1567,
@@ -19591,7 +19916,8 @@ export const charsData = {
       },
       "codepoint": 1567,
       "unicode": "U+061F",
-      "char": "؟"
+      "char": "؟",
+      "is_ligature": false
     },
     "8217": {
       "key": 8217,
@@ -19646,7 +19972,8 @@ export const charsData = {
       },
       "codepoint": 8217,
       "unicode": "U+2019",
-      "char": "’"
+      "char": "’",
+      "is_ligature": false
     },
     "8229": {
       "key": 8229,
@@ -19737,7 +20064,8 @@ export const charsData = {
       },
       "codepoint": 8229,
       "unicode": "U+2025",
-      "char": "‥"
+      "char": "‥",
+      "is_ligature": false
     },
     "8230": {
       "key": 8230,
@@ -19864,7 +20192,8 @@ export const charsData = {
       },
       "codepoint": 8230,
       "unicode": "U+2026",
-      "char": "…"
+      "char": "…",
+      "is_ligature": false
     },
     "8251": {
       "key": 8251,
@@ -20027,7 +20356,8 @@ export const charsData = {
       },
       "codepoint": 8251,
       "unicode": "U+203B",
-      "char": "※"
+      "char": "※",
+      "is_ligature": false
     },
     "8252": {
       "key": 8252,
@@ -20118,7 +20448,8 @@ export const charsData = {
       },
       "codepoint": 8252,
       "unicode": "U+203C",
-      "char": "‼"
+      "char": "‼",
+      "is_ligature": false
     },
     "8383": {
       "key": 8383,
@@ -20245,7 +20576,8 @@ export const charsData = {
       },
       "codepoint": 8383,
       "unicode": "U+20BF",
-      "char": "₿"
+      "char": "₿",
+      "is_ligature": false
     },
     "8592": {
       "key": 8592,
@@ -20444,7 +20776,8 @@ export const charsData = {
       },
       "codepoint": 8592,
       "unicode": "U+2190",
-      "char": "←"
+      "char": "←",
+      "is_ligature": false
     },
     "8593": {
       "key": 8593,
@@ -20571,7 +20904,8 @@ export const charsData = {
       },
       "codepoint": 8593,
       "unicode": "U+2191",
-      "char": "↑"
+      "char": "↑",
+      "is_ligature": false
     },
     "8594": {
       "key": 8594,
@@ -20770,7 +21104,8 @@ export const charsData = {
       },
       "codepoint": 8594,
       "unicode": "U+2192",
-      "char": "→"
+      "char": "→",
+      "is_ligature": false
     },
     "8595": {
       "key": 8595,
@@ -20897,7 +21232,8 @@ export const charsData = {
       },
       "codepoint": 8595,
       "unicode": "U+2193",
-      "char": "↓"
+      "char": "↓",
+      "is_ligature": false
     },
     "8596": {
       "key": 8596,
@@ -21096,7 +21432,8 @@ export const charsData = {
       },
       "codepoint": 8596,
       "unicode": "U+2194",
-      "char": "↔"
+      "char": "↔",
+      "is_ligature": false
     },
     "8597": {
       "key": 8597,
@@ -21223,7 +21560,8 @@ export const charsData = {
       },
       "codepoint": 8597,
       "unicode": "U+2195",
-      "char": "↕"
+      "char": "↕",
+      "is_ligature": false
     },
     "8718": {
       "key": 8718,
@@ -21314,7 +21652,8 @@ export const charsData = {
       },
       "codepoint": 8718,
       "unicode": "U+220E",
-      "char": "∎"
+      "char": "∎",
+      "is_ligature": false
     },
     "8723": {
       "key": 8723,
@@ -21405,7 +21744,8 @@ export const charsData = {
       },
       "codepoint": 8723,
       "unicode": "U+2213",
-      "char": "∓"
+      "char": "∓",
+      "is_ligature": false
     },
     "8724": {
       "key": 8724,
@@ -21496,7 +21836,8 @@ export const charsData = {
       },
       "codepoint": 8724,
       "unicode": "U+2214",
-      "char": "∔"
+      "char": "∔",
+      "is_ligature": false
     },
     "8756": {
       "key": 8756,
@@ -21587,7 +21928,8 @@ export const charsData = {
       },
       "codepoint": 8756,
       "unicode": "U+2234",
-      "char": "∴"
+      "char": "∴",
+      "is_ligature": false
     },
     "8757": {
       "key": 8757,
@@ -21678,7 +22020,8 @@ export const charsData = {
       },
       "codepoint": 8757,
       "unicode": "U+2235",
-      "char": "∵"
+      "char": "∵",
+      "is_ligature": false
     },
     "8758": {
       "key": 8758,
@@ -21733,7 +22076,8 @@ export const charsData = {
       },
       "codepoint": 8758,
       "unicode": "U+2236",
-      "char": "∶"
+      "char": "∶",
+      "is_ligature": false
     },
     "8759": {
       "key": 8759,
@@ -21824,7 +22168,8 @@ export const charsData = {
       },
       "codepoint": 8759,
       "unicode": "U+2237",
-      "char": "∷"
+      "char": "∷",
+      "is_ligature": false
     },
     "8962": {
       "key": 8962,
@@ -21951,7 +22296,8 @@ export const charsData = {
       },
       "codepoint": 8962,
       "unicode": "U+2302",
-      "char": "⌂"
+      "char": "⌂",
+      "is_ligature": false
     },
     "9167": {
       "key": 9167,
@@ -22078,7 +22424,8 @@ export const charsData = {
       },
       "codepoint": 9167,
       "unicode": "U+23CF",
-      "char": "⏏"
+      "char": "⏏",
+      "is_ligature": false
     },
     "9766": {
       "key": 9766,
@@ -22205,7 +22552,8 @@ export const charsData = {
       },
       "codepoint": 9766,
       "unicode": "U+2626",
-      "char": "☦"
+      "char": "☦",
+      "is_ligature": false
     },
     "9768": {
       "key": 9768,
@@ -22332,7 +22680,8 @@ export const charsData = {
       },
       "codepoint": 9768,
       "unicode": "U+2628",
-      "char": "☨"
+      "char": "☨",
+      "is_ligature": false
     },
     "9769": {
       "key": 9769,
@@ -22495,7 +22844,8 @@ export const charsData = {
       },
       "codepoint": 9769,
       "unicode": "U+2629",
-      "char": "☩"
+      "char": "☩",
+      "is_ligature": false
     },
     "9776": {
       "key": 9776,
@@ -22622,7 +22972,8 @@ export const charsData = {
       },
       "codepoint": 9776,
       "unicode": "U+2630",
-      "char": "☰"
+      "char": "☰",
+      "is_ligature": false
     },
     "9777": {
       "key": 9777,
@@ -22749,7 +23100,8 @@ export const charsData = {
       },
       "codepoint": 9777,
       "unicode": "U+2631",
-      "char": "☱"
+      "char": "☱",
+      "is_ligature": false
     },
     "9778": {
       "key": 9778,
@@ -22876,7 +23228,8 @@ export const charsData = {
       },
       "codepoint": 9778,
       "unicode": "U+2632",
-      "char": "☲"
+      "char": "☲",
+      "is_ligature": false
     },
     "9779": {
       "key": 9779,
@@ -23003,7 +23356,8 @@ export const charsData = {
       },
       "codepoint": 9779,
       "unicode": "U+2633",
-      "char": "☳"
+      "char": "☳",
+      "is_ligature": false
     },
     "9780": {
       "key": 9780,
@@ -23130,7 +23484,8 @@ export const charsData = {
       },
       "codepoint": 9780,
       "unicode": "U+2634",
-      "char": "☴"
+      "char": "☴",
+      "is_ligature": false
     },
     "9781": {
       "key": 9781,
@@ -23257,7 +23612,8 @@ export const charsData = {
       },
       "codepoint": 9781,
       "unicode": "U+2635",
-      "char": "☵"
+      "char": "☵",
+      "is_ligature": false
     },
     "9782": {
       "key": 9782,
@@ -23384,7 +23740,8 @@ export const charsData = {
       },
       "codepoint": 9782,
       "unicode": "U+2636",
-      "char": "☶"
+      "char": "☶",
+      "is_ligature": false
     },
     "9783": {
       "key": 9783,
@@ -23511,7 +23868,8 @@ export const charsData = {
       },
       "codepoint": 9783,
       "unicode": "U+2637",
-      "char": "☷"
+      "char": "☷",
+      "is_ligature": false
     },
     "9825": {
       "key": 9825,
@@ -23638,7 +23996,8 @@ export const charsData = {
       },
       "codepoint": 9825,
       "unicode": "U+2661",
-      "char": "♡"
+      "char": "♡",
+      "is_ligature": false
     },
     "9829": {
       "key": 9829,
@@ -23765,7 +24124,8 @@ export const charsData = {
       },
       "codepoint": 9829,
       "unicode": "U+2665",
-      "char": "♥"
+      "char": "♥",
+      "is_ligature": false
     },
     "9856": {
       "key": 9856,
@@ -23964,7 +24324,8 @@ export const charsData = {
       },
       "codepoint": 9856,
       "unicode": "U+2680",
-      "char": "⚀"
+      "char": "⚀",
+      "is_ligature": false
     },
     "9857": {
       "key": 9857,
@@ -24163,7 +24524,8 @@ export const charsData = {
       },
       "codepoint": 9857,
       "unicode": "U+2681",
-      "char": "⚁"
+      "char": "⚁",
+      "is_ligature": false
     },
     "9858": {
       "key": 9858,
@@ -24362,7 +24724,8 @@ export const charsData = {
       },
       "codepoint": 9858,
       "unicode": "U+2682",
-      "char": "⚂"
+      "char": "⚂",
+      "is_ligature": false
     },
     "9859": {
       "key": 9859,
@@ -24561,7 +24924,8 @@ export const charsData = {
       },
       "codepoint": 9859,
       "unicode": "U+2683",
-      "char": "⚃"
+      "char": "⚃",
+      "is_ligature": false
     },
     "9860": {
       "key": 9860,
@@ -24760,7 +25124,8 @@ export const charsData = {
       },
       "codepoint": 9860,
       "unicode": "U+2684",
-      "char": "⚄"
+      "char": "⚄",
+      "is_ligature": false
     },
     "9861": {
       "key": 9861,
@@ -24959,7 +25324,8 @@ export const charsData = {
       },
       "codepoint": 9861,
       "unicode": "U+2685",
-      "char": "⚅"
+      "char": "⚅",
+      "is_ligature": false
     },
     "9993": {
       "key": 9993,
@@ -25122,7 +25488,8 @@ export const charsData = {
       },
       "codepoint": 9993,
       "unicode": "U+2709",
-      "char": "✉"
+      "char": "✉",
+      "is_ligature": false
     },
     "10013": {
       "key": 10013,
@@ -25249,7 +25616,152 @@ export const charsData = {
       },
       "codepoint": 10013,
       "unicode": "U+271D",
-      "char": "✝"
+      "char": "✝",
+      "is_ligature": false
+    },
+    "ΤΤΤ": {
+      "key": "ΤΤΤ",
+      "width": 5,
+      "height": 9,
+      "data": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        1,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        [
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          1,
+          1,
+          1,
+          0
+        ],
+        [
+          0,
+          0,
+          1,
+          0,
+          0
+        ],
+        [
+          1,
+          0,
+          1,
+          0,
+          1
+        ],
+        [
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        [
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      ],
+      "active_pixels": 14,
+      "bbox": {
+        "x": 0,
+        "y": 2,
+        "width": 5,
+        "height": 5
+      },
+      "codepoint": null,
+      "unicode": null,
+      "char": null,
+      "is_ligature": true,
+      "sequence": "ΤΤΤ",
+      "sequence_chars": [
+        "Τ",
+        "Τ",
+        "Τ"
+      ],
+      "sequence_codepoints": [
+        932,
+        932,
+        932
+      ],
+      "sequence_unicode": [
+        "U+03A4",
+        "U+03A4",
+        "U+03A4"
+      ]
     }
   }
 };

@@ -16,12 +16,16 @@ Notes on naming:
   - record the recommended lowercase filename in files[].recommendedFile
   - emit a warning on stdout
 
-Usage:
-  # simplest: set DEFAULT_NAME below, then run:
-  python tools/generate-manifest.py
+Ligatures:
+- If data/chars.php is available, this script will also extract ligature keys
+  (string keys with len(key) > 1) and include them in the manifest.
+- If chars.php cannot be parsed, the manifest still reports GSUB/GPOS tags from
+  the font files, but ligature enumeration will be marked incomplete.
 
-  # or override:
-  python tools/generate-manifest.py --name mmxx
+Usage:
+  python tools/generate-manifest.py
+  python tools/generate-manifest.py --name defont
+  python tools/generate-manifest.py --name defont --chars data/chars.php
 """
 
 from __future__ import annotations
@@ -30,11 +34,11 @@ import argparse
 import hashlib
 import json
 import os
+import subprocess
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Dict, List, Optional, Set
-
+from typing import Any, Dict, List, Optional, Set
 
 from fontTools.ttLib import TTFont
 
@@ -42,7 +46,7 @@ from fontTools.ttLib import TTFont
 # =========================
 # Config
 # =========================
-DEFAULT_NAME = "defont"  # <-- set your default font base-name here (WITHOUT extension), lowercase recommended
+DEFAULT_NAME = "defont"  # lowercase recommended
 
 EXTS = ["woff2", "woff", "ttf", "otf"]  # look for these in dist/fonts
 PREFERRED_PARSE_ORDER = ["ttf", "otf", "woff2", "woff"]  # for metadata extraction
@@ -211,7 +215,81 @@ def _range_intersects(ranges: List[List[int]], lo: int, hi: int) -> bool:
     return False
 
 
-def build_manifest(name_lc: str, files: List[FontFileInfo], repo_root: Path) -> Dict:
+def run_php_chars_to_ligatures(chars_php: Path) -> List[str]:
+    """
+    Read data/chars.php and extract ligature keys:
+      - skip numeric keys
+      - skip '.notdef'
+      - accept string keys with len(key) > 1
+    """
+    chars_php = Path(chars_php).resolve()
+    if not chars_php.exists():
+        raise FileNotFoundError(f"chars.php not found: {chars_php}")
+
+    php = "php.exe" if os.name == "nt" else "php"
+
+    php_code = (
+        "ini_set('display_errors','0');"
+        "ini_set('html_errors','0');"
+        "error_reporting(0);"
+        f"require {json.dumps(str(chars_php))};"
+        "echo json_encode($c, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);"
+    )
+
+    cmd = [
+        php,
+        "-d", "display_errors=0",
+        "-d", "html_errors=0",
+        "-d", "error_reporting=0",
+        "-r", php_code,
+    ]
+
+    res = subprocess.run(cmd, capture_output=True, text=True, check=False)
+    stdout = res.stdout or ""
+    stderr = res.stderr or ""
+
+    def extract_json_blob(s: str) -> str:
+        start = s.find("{")
+        end = s.rfind("}")
+        if start == -1 or end == -1 or end <= start:
+            raise RuntimeError(
+                "PHP output did not contain a JSON object.\n"
+                f"Exit code: {res.returncode}\n"
+                f"STDOUT (first 800 chars):\n{stdout[:800]}\n\n"
+                f"STDERR (first 800 chars):\n{stderr[:800]}"
+            )
+        return s[start : end + 1]
+
+    try:
+        raw: Any = json.loads(stdout)
+    except Exception:
+        blob = extract_json_blob(stdout if stdout.strip() else (stdout + "\n" + stderr))
+        raw = json.loads(blob)
+
+    if not isinstance(raw, dict):
+        raise TypeError(f"Expected JSON object from PHP, got: {type(raw)}")
+
+    ligatures: List[str] = []
+    for k in raw.keys():
+        ks = str(k)
+        if ks == ".notdef":
+            continue
+        if ks.isdigit():
+            continue
+        if len(ks) > 1:
+            ligatures.append(ks)
+
+    return sorted(set(ligatures), key=lambda s: (len(s), s))
+
+
+def build_manifest(
+    name_lc: str,
+    files: List[FontFileInfo],
+    repo_root: Path,
+    ligature_sequences: Optional[List[str]] = None,
+    ligature_source: Optional[str] = None,
+    ligature_source_error: Optional[str] = None,
+) -> Dict:
     cmap_codepoints: Set[int] = set()
     gsub_tags: Set[str] = set()
     gpos_tags: Set[str] = set()
@@ -293,7 +371,6 @@ def build_manifest(name_lc: str, files: List[FontFileInfo], repo_root: Path) -> 
     file_entries = []
     # Keep predictable order by EXTS
     for info in sorted(files, key=lambda x: EXTS.index(x.ext)):
-        # actual file relative to dist/fonts (correct path)
         try:
             rel_actual = info.path.relative_to(dist_fonts_dir).as_posix()
         except Exception:
@@ -317,13 +394,36 @@ def build_manifest(name_lc: str, files: List[FontFileInfo], repo_root: Path) -> 
         or e.get("file", "") != e.get("recommendedFile", "")
     ]
 
+    known_ligature_tags = ["liga", "rlig", "dlig", "hlig", "clig"]
+    present_ligature_tags = [tag for tag in known_ligature_tags if tag in gsub_tags]
+
+    ligatures_present = bool(present_ligature_tags)
+    if ligature_sequences:
+        ligatures_present = True
+
+    ligatures_obj: Dict[str, object] = {
+        "present": ligatures_present,
+        "featureTags": present_ligature_tags,
+        "count": len(ligature_sequences) if ligature_sequences is not None else None,
+        "sequences": ligature_sequences if ligature_sequences is not None else None,
+        "maxSequenceLength": (
+            max((len(s) for s in ligature_sequences), default=0)
+            if ligature_sequences is not None
+            else None
+        ),
+        "enumerationComplete": ligature_sequences is not None,
+        "source": ligature_source,
+    }
+    if ligature_source_error:
+        ligatures_obj["sourceError"] = ligature_source_error
+
     return {
-        "manifestVersion": 1,
+        "manifestVersion": 2,
         "generatedAt": datetime.now(timezone.utc).isoformat(),
-        "name": name_lc,  # canonical lowercase name
+        "name": name_lc,
         "metadata": meta,
         "files": file_entries,
-        "unicodeRanges": ranges,  # inclusive [start,end] codepoint ranges
+        "unicodeRanges": ranges,
         "counts": {
             "codepointsTotal": total_codepoints,
             "codepointsBMP": bmp_codepoints,
@@ -333,6 +433,7 @@ def build_manifest(name_lc: str, files: List[FontFileInfo], repo_root: Path) -> 
             "GSUB": sorted(gsub_tags),
             "GPOS": sorted(gpos_tags),
         },
+        "ligatures": ligatures_obj,
         "hints": {
             "commonBlocks": common_blocks,
             "preferredLowercaseFilenames": True,
@@ -340,7 +441,7 @@ def build_manifest(name_lc: str, files: List[FontFileInfo], repo_root: Path) -> 
             "notes": [
                 "unicodeRanges is derived from cmap.getBestCmap() across all parseable font files.",
                 "GSUB/GPOS feature tags are extracted when those tables exist.",
-                "Ligature contents are not enumerated here (by design); use shaping in your sample to demonstrate them.",
+                "ligatures.sequences is sourced from chars.php when available; font files alone do not reliably preserve original ligature strings in a simple universal form.",
                 "If files[].file differs from files[].recommendedFile, consider renaming to the recommended lowercase filenames for portability (CDN/Linux).",
             ],
         },
@@ -363,6 +464,11 @@ def main() -> int:
         default=DEFAULT_NAME,
         help=f"Base filename (without extension) in dist/fonts/ (default: {DEFAULT_NAME!r}).",
     )
+    ap.add_argument(
+        "--chars",
+        default="data/chars.php",
+        help="Path to chars.php for optional ligature enumeration (default: data/chars.php).",
+    )
     args = ap.parse_args()
 
     repo_root = Path(__file__).resolve().parents[1]  # tools/.. -> repo root
@@ -379,9 +485,20 @@ def main() -> int:
 
     files = find_font_files(dist_fonts_dir, name_lc)
 
+    ligature_sequences: Optional[List[str]] = None
+    ligature_source: Optional[str] = None
+    ligature_source_error: Optional[str] = None
+
+    chars_path = (repo_root / args.chars).resolve() if not Path(args.chars).is_absolute() else Path(args.chars).resolve()
+    try:
+        ligature_sequences = run_php_chars_to_ligatures(chars_path)
+        ligature_source = str(chars_path.relative_to(repo_root).as_posix()) if chars_path.is_relative_to(repo_root) else str(chars_path)
+    except Exception as e:
+        ligature_source_error = f"{type(e).__name__}: {e}"
+
     if not files:
         minimal = {
-            "manifestVersion": 1,
+            "manifestVersion": 2,
             "generatedAt": datetime.now(timezone.utc).isoformat(),
             "name": name_lc,
             "error": f"No font files found matching dist/fonts/{name_lc}.{{{','.join(EXTS)}}} (case-insensitive lookup attempted).",
@@ -389,13 +506,34 @@ def main() -> int:
             "unicodeRanges": [],
             "counts": {"codepointsTotal": 0, "codepointsBMP": 0, "codepointsAstral": 0},
             "features": {"GSUB": [], "GPOS": []},
+            "ligatures": {
+                "present": bool(ligature_sequences),
+                "featureTags": [],
+                "count": len(ligature_sequences) if ligature_sequences is not None else None,
+                "sequences": ligature_sequences if ligature_sequences is not None else None,
+                "maxSequenceLength": (
+                    max((len(s) for s in ligature_sequences), default=0)
+                    if ligature_sequences is not None
+                    else None
+                ),
+                "enumerationComplete": ligature_sequences is not None,
+                "source": ligature_source,
+                **({"sourceError": ligature_source_error} if ligature_source_error else {}),
+            },
         }
         write_json(out_path, minimal)
         print(minimal["error"])
         print(f"Wrote: {out_path}")
         return 2
 
-    manifest = build_manifest(name_lc, files, repo_root)
+    manifest = build_manifest(
+        name_lc=name_lc,
+        files=files,
+        repo_root=repo_root,
+        ligature_sequences=ligature_sequences,
+        ligature_source=ligature_source,
+        ligature_source_error=ligature_source_error,
+    )
     write_json(out_path, manifest)
 
     print(f"Wrote: {out_path}")
@@ -409,10 +547,24 @@ def main() -> int:
             print(f"  - {actual}")
 
     print(f"Codepoints: {manifest['counts']['codepointsTotal']}")
+
+    lig = manifest.get("ligatures", {})
+    if lig.get("present"):
+        feature_tags = ", ".join(lig.get("featureTags") or [])
+        count = lig.get("count")
+        if count is None:
+            print(f"Ligatures: yes ({feature_tags or 'feature unknown'})")
+        else:
+            print(f"Ligatures: yes ({count} enumerated; features: {feature_tags or 'none detected'})")
+    else:
+        print("Ligatures: no")
+
     if any(f.parse_error for f in files):
         print("Note: Some files could not be parsed; see files[].parseError in the manifest.")
     if manifest.get("hints", {}).get("hasCasingMismatches"):
         print("Warning: Some filenames differ from recommended lowercase names (see files[].recommendedFile).")
+    if ligature_source_error:
+        print("Note: Could not enumerate ligature strings from chars.php; see ligatures.sourceError in the manifest.")
     return 0
 
 

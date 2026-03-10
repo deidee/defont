@@ -1,6 +1,6 @@
 {
-  "manifestVersion": 1,
-  "generatedAt": "2026-03-10T12:54:38.521912+00:00",
+  "manifestVersion": 2,
+  "generatedAt": "2026-03-10T15:56:44.933691+00:00",
   "name": "defont",
   "metadata": {
     "family": "defont",
@@ -8,29 +8,29 @@
     "fullName": "defont Regular",
     "postScriptName": "defont-Regular",
     "unitsPerEm": 1000,
-    "glyphCount": 2972
+    "glyphCount": 2996
   },
   "files": [
     {
       "ext": "woff2",
       "file": "defont.woff2",
       "recommendedFile": "defont.woff2",
-      "bytes": 29172,
-      "sha256": "35819987205ee528a5509e2357f44c206b6791375e79777b1bc30ba46538e49f"
+      "bytes": 29388,
+      "sha256": "33c3bd9aa2365a1754d5c5556e3b7f3e0fafde004ee0bdb5f111546aa237d788"
     },
     {
       "ext": "woff",
       "file": "defont.woff",
       "recommendedFile": "defont.woff",
-      "bytes": 52036,
-      "sha256": "f0fb849e696ceacf15763022bb70ce0e1a8dd7a6f4b11b3e91f8ec160582e52b"
+      "bytes": 52556,
+      "sha256": "3db14c4d5a66119a02fa2926e2ba12e3c875ce5562095632b484e00c663e329b"
     },
     {
       "ext": "ttf",
       "file": "defont.ttf",
       "recommendedFile": "defont.ttf",
-      "bytes": 144740,
-      "sha256": "7173a79d9a4da462bbd0497b5c0563022caf63344c63f80aef6451366aa21332"
+      "bytes": 146176,
+      "sha256": "3c419d9723f5bb88904815d4ba21bc5fc931213dbe03d7a0f3597d031f758ac5"
     }
   ],
   "unicodeRanges": [
@@ -73,6 +73,10 @@
     [
       305,
       305
+    ],
+    [
+      932,
+      932
     ],
     [
       1025,
@@ -200,13 +204,28 @@
     ]
   ],
   "counts": {
-    "codepointsTotal": 229,
-    "codepointsBMP": 229,
+    "codepointsTotal": 230,
+    "codepointsBMP": 230,
     "codepointsAstral": 0
   },
   "features": {
-    "GSUB": [],
+    "GSUB": [
+      "liga"
+    ],
     "GPOS": []
+  },
+  "ligatures": {
+    "present": true,
+    "featureTags": [
+      "liga"
+    ],
+    "count": 1,
+    "sequences": [
+      "Î¤Î¤Î¤"
+    ],
+    "maxSequenceLength": 6,
+    "enumerationComplete": true,
+    "source": "data/chars.php"
   },
   "hints": {
     "commonBlocks": {
@@ -220,7 +239,7 @@
     "notes": [
       "unicodeRanges is derived from cmap.getBestCmap() across all parseable font files.",
       "GSUB/GPOS feature tags are extracted when those tables exist.",
-      "Ligature contents are not enumerated here (by design); use shaping in your sample to demonstrate them.",
+      "ligatures.sequences is sourced from chars.php when available; font files alone do not reliably preserve original ligature strings in a simple universal form.",
       "If files[].file differs from files[].recommendedFile, consider renaming to the recommended lowercase filenames for portability (CDN/Linux)."
     ]
   }

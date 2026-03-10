@@ -106,6 +106,16 @@
             padding: 12px 14px 14px;
         }
 
+        /* Sticky controls */
+        .controls{
+            position: sticky;
+            top: var(--pagepad);
+            align-self: start;
+        }
+        @media (max-width: 980px){
+            .controls{ position: static; }
+        }
+
         label{
             display:block;
             font-size: 12px;
@@ -220,6 +230,20 @@
             font-family: "defont", system-ui, sans-serif;
             font-kerning: normal;
             text-rendering: geometricPrecision;
+
+            /* editable affordance */
+            outline: none;
+            border-radius: 12px;
+            padding: 10px 12px;
+            margin: -10px -12px 0; /* keep visual alignment with stage padding */
+            min-height: 160px;
+        }
+        .sample:focus{
+            box-shadow: 0 0 0 2px rgba(125, 211, 252, .18);
+            background: rgba(255,255,255,.03);
+        }
+        [data-theme="light"] .sample:focus{
+            background: rgba(0,0,0,.03);
         }
 
         .meta{
@@ -344,7 +368,7 @@
 
 <div class="wrap">
     <!-- Controls -->
-    <section class="card">
+    <section class="card controls">
         <h2>Controls</h2>
         <div class="content">
             <label for="text">Sample text</label>
@@ -391,6 +415,7 @@
                 <div class="pill"><span id="padVal"></span>px</div>
             </div>
 
+            <label class="tog"><input id="liga" type="checkbox" checked /> Enable ligatures</label>
             <label class="tog"><input id="systemFallback" type="checkbox" /> Force system font (debug)</label>
 
             <div class="meta" style="margin-top: 12px;">
@@ -404,12 +429,13 @@
     <section class="card preview">
         <h2>Preview</h2>
         <div class="stage" id="stage">
-            <div class="sample" id="sample"></div>
+            <!-- editable preview -->
+            <div class="sample" id="sample" contenteditable="true" spellcheck="false" aria-label="Sample text preview (editable)"></div>
 
             <!-- enabled by default -->
             <div class="glyphs open" id="glyphs">
                 <div class="glyphbar">
-                    <div class="hint">Click a glyph to append it to the sample text.</div>
+                    <div class="hint">Click a glyph to insert it (at caret if you’re editing the preview).</div>
                     <button class="btn" id="copyAll">Copy sample</button>
                 </div>
                 <div class="gridwrap" id="glyphGrid"></div>
@@ -469,6 +495,7 @@
         ls: $("ls"),
         lh: $("lh"),
         pad: $("pad"),
+        liga: $("liga"),
         sizeVal: $("sizeVal"),
         lsVal: $("lsVal"),
         lhVal: $("lhVal"),
@@ -484,6 +511,8 @@
         fontStatus: $("fontStatus"),
         charCount: $("charCount"),
     };
+
+    let _syncing = false;
 
     function toChar(cp){
         try { return String.fromCodePoint(cp); }
@@ -505,6 +534,25 @@
         return [...(str || "")].length;
     }
 
+    function normalizeText(s){
+        // Keep newlines if the user typed them; just normalize CRLF->LF
+        return (s ?? "").replace(/\r/g, "");
+    }
+
+    function applyLigatures(){
+        const on = !!els.liga.checked;
+
+        // Broad compatibility: combine higher-level + explicit features
+        els.sample.style.fontVariantLigatures = on
+            ? "common-ligatures contextual discretionary-ligatures"
+            : "none";
+
+        // Explicit feature toggles for shaping engines
+        els.sample.style.fontFeatureSettings = on
+            ? '"liga" 1, "clig" 1, "dlig" 1'
+            : '"liga" 0, "clig" 0, "dlig" 0';
+    }
+
     function applyStyles(){
         const size = parseFloat(els.size.value);
         const ls = parseFloat(els.ls.value);
@@ -524,12 +572,46 @@
         els.sample.style.fontSize = size + "px";
         els.sample.style.letterSpacing = ls + "px";
         els.sample.style.lineHeight = lh;
+
+        applyLigatures();
     }
 
-    function applyText(){
-        const t = els.text.value ?? "";
+    function applyTextFromTextarea(){
+        const t = normalizeText(els.text.value ?? "");
         els.sample.textContent = t;
         els.charCount.textContent = String(countCodepoints(t));
+    }
+
+    function applyTextFromSample(){
+        // Use innerText to preserve user-inserted line breaks in contenteditable
+        const t = normalizeText(els.sample.innerText ?? "");
+        els.text.value = t;
+        els.charCount.textContent = String(countCodepoints(t));
+    }
+
+    function insertTextAtCaretInSample(text){
+        // Prefer execCommand for contenteditable insert-at-caret behavior
+        els.sample.focus();
+        try{
+            if (document.queryCommandSupported && document.queryCommandSupported("insertText")){
+                document.execCommand("insertText", false, text);
+                return true;
+            }
+        }catch{}
+
+        // Fallback: Range API
+        const sel = window.getSelection();
+        if (!sel || sel.rangeCount === 0) return false;
+
+        const range = sel.getRangeAt(0);
+        range.deleteContents();
+        const node = document.createTextNode(text);
+        range.insertNode(node);
+        range.setStartAfter(node);
+        range.collapse(true);
+        sel.removeAllRanges();
+        sel.addRange(range);
+        return true;
     }
 
     function buildGlyphGrid(){
@@ -561,8 +643,25 @@
 
             cell.addEventListener("click", () => {
                 const realCh = ch; // includes actual space
+
+                // If user is editing the preview, insert at caret there; otherwise append to textarea.
+                if (document.activeElement === els.sample){
+                    insertTextAtCaretInSample(realCh);
+                    if (!_syncing){
+                        _syncing = true;
+                        applyTextFromSample();
+                        _syncing = false;
+                    }
+                    showToast(`Inserted ${hex(cp)}`);
+                    return;
+                }
+
                 els.text.value = (els.text.value || "") + realCh;
-                applyText();
+                if (!_syncing){
+                    _syncing = true;
+                    applyTextFromTextarea();
+                    _syncing = false;
+                }
                 showToast(`Inserted ${hex(cp)}`);
                 els.text.focus();
             });
@@ -598,26 +697,28 @@
     }
 
     function buildDefaultTextFromUnicodeRanges(unicodeRanges){
+        // Change #1: separate blocks by a single space (not a line break)
         if (!Array.isArray(unicodeRanges) || unicodeRanges.length === 0){
             return buildDefaultTextFromCodepoints(AVAILABLE_CODEPOINTS);
         }
 
-        const lines = [];
+        const blocks = [];
         for (const pair of unicodeRanges){
             if (!Array.isArray(pair) || pair.length < 2) continue;
             let [start, end] = pair.map(n => Number(n));
             if (!Number.isFinite(start) || !Number.isFinite(end)) continue;
             if (end < start) [start, end] = [end, start];
 
-            let line = "";
+            let block = "";
             for (let cp = start; cp <= end; cp++){
-                line += toChar(cp);
-                if (line.length > 4000) break; // just in case
+                block += toChar(cp);
+                if (block.length > 4000) break; // just in case
             }
-            lines.push(line);
+            blocks.push(block);
         }
 
-        return lines.join("\n");
+        // Join with exactly one space; trim to avoid leading/trailing whitespace surprises
+        return blocks.join(" ").trim();
     }
 
     function buildDefaultTextFromCodepoints(codepoints){
@@ -692,14 +793,18 @@
         els.ls.value = 2;
         els.lh.value = 1.05;
         els.pad.value = 18;
+        els.liga.checked = true;
         els.systemFallback.checked = false;
 
         // keep glyph table open by default
         els.glyphs.classList.add("open");
         els.toggleGlyphs.classList.add("primary");
 
-        applyText();
+        _syncing = true;
+        applyTextFromTextarea();
         applyStyles();
+        _syncing = false;
+
         showToast("Reset");
     }
 
@@ -720,7 +825,13 @@
     }
 
     // Wire up UI
-    els.apply.addEventListener("click", () => { applyText(); applyStyles(); });
+    els.apply.addEventListener("click", () => {
+        _syncing = true;
+        applyTextFromTextarea();
+        applyStyles();
+        _syncing = false;
+    });
+
     els.reset.addEventListener("click", resetAll);
     els.toggleGlyphs.addEventListener("click", toggleGlyphs);
     els.toggleTheme.addEventListener("click", toggleTheme);
@@ -730,9 +841,23 @@
         r.addEventListener("input", () => { applyStyles(); });
     }
     els.systemFallback.addEventListener("change", applyStyles);
+    els.liga.addEventListener("change", () => { applyLigatures(); });
 
-    // Live update text while typing
-    els.text.addEventListener("input", applyText);
+    // Live update text while typing (left textarea -> preview)
+    els.text.addEventListener("input", () => {
+        if (_syncing) return;
+        _syncing = true;
+        applyTextFromTextarea();
+        _syncing = false;
+    });
+
+    // Live update while editing preview (preview -> left textarea)
+    els.sample.addEventListener("input", () => {
+        if (_syncing) return;
+        _syncing = true;
+        applyTextFromSample();
+        _syncing = false;
+    });
 
     // Init
     (async function init(){

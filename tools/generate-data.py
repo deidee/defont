@@ -8,6 +8,10 @@ Parse glyph data from data/chars.php and export it to:
 - data/chars.py     (optional Python module)
 - data/chars.mjs    (optional JS module)
 
+Ligatures:
+- Any *string key* (except ".notdef") with len(key) > 1 is treated as a ligature.
+- meta.ligature_keys contains the list of such keys (strings).
+
 Notes:
 - The parser reads PHP source text; it does NOT execute PHP.
 - It expects assignments like: $c[0x41] = array(...);
@@ -43,7 +47,7 @@ def strip_php_comments(text: str) -> str:
 
 def parse_php_string_literal(raw: str) -> str:
     """
-    Minimal PHP string literal parser for simple keys like '.notdef'.
+    Minimal PHP string literal parser for simple keys like '.notdef' or 'ΤΤΤ'.
     Supports single or double quotes and basic escaped quote/backslash.
     """
     raw = raw.strip()
@@ -161,6 +165,7 @@ def normalize_glyph(key: str | int, values: list[int]) -> dict[str, Any]:
         "bbox": compute_bbox(rows),
     }
 
+    # Codepoint glyphs (classic $c[0x....] keys)
     if isinstance(key, int):
         entry["codepoint"] = key
         entry["unicode"] = f"U+{key:04X}"
@@ -168,10 +173,27 @@ def normalize_glyph(key: str | int, values: list[int]) -> dict[str, Any]:
             entry["char"] = chr(key)
         except ValueError:
             entry["char"] = None
+        entry["is_ligature"] = False
+
+    # String glyphs (.notdef, ligatures, or any other named glyphs)
     else:
         entry["codepoint"] = None
         entry["unicode"] = None
         entry["char"] = None
+
+        is_lig = (key != ".notdef") and (len(key) > 1)
+        entry["is_ligature"] = is_lig
+
+        if is_lig:
+            entry["sequence"] = key
+            entry["sequence_chars"] = list(key)
+            entry["sequence_codepoints"] = [ord(ch) for ch in key]
+            entry["sequence_unicode"] = [f"U+{ord(ch):04X}" for ch in key]
+        else:
+            entry["sequence"] = None
+            entry["sequence_chars"] = None
+            entry["sequence_codepoints"] = None
+            entry["sequence_unicode"] = None
 
     return entry
 
@@ -194,11 +216,14 @@ def parse_php_chars(php_text: str) -> OrderedDict[str | int, dict[str, Any]]:
 def build_payload(glyphs: OrderedDict[str | int, dict[str, Any]], source_path: Path) -> dict[str, Any]:
     glyphs_by_key: OrderedDict[str, dict[str, Any]] = OrderedDict()
     keys_in_order: list[str] = []
+    ligature_keys: list[str] = []
 
     for k, v in glyphs.items():
         sk = str(k) if isinstance(k, str) else str(int(k))
         glyphs_by_key[sk] = v
         keys_in_order.append(sk)
+        if v.get("is_ligature") is True:
+            ligature_keys.append(sk)
 
     widths = sorted({g["width"] for g in glyphs.values() if g["width"] is not None})
     heights = sorted({g["height"] for g in glyphs.values() if g["height"] is not None})
@@ -211,12 +236,14 @@ def build_payload(glyphs: OrderedDict[str | int, dict[str, Any]], source_path: P
         "meta": {
             "glyph_count": len(glyphs),
             "keys_in_order": keys_in_order,
+            "ligature_keys": ligature_keys,
             "distinct_widths": widths,
             "distinct_heights": heights,
             "notes": [
                 "glyph rows are row-major (top-to-bottom), matching the PHP arrays",
                 "empty glyphs (e.g. space) have width/height = null because the PHP source stores no dimensions",
                 "JSON object keys are strings; codepoint glyphs also include numeric 'codepoint'",
+                "ligatures are detected as string keys with len(key) > 1 (excluding '.notdef')",
             ],
         },
         "glyphs": glyphs_by_key,
@@ -308,6 +335,10 @@ def main() -> int:
     if not args.json_only:
         print(f"Wrote {args.py_out}")
         print(f"Wrote {args.js_out}")
+
+    ligs = payload["meta"]["ligature_keys"]
+    if ligs:
+        print(f"Ligatures: {len(ligs)} ({', '.join(ligs[:10])}{'…' if len(ligs) > 10 else ''})")
 
     return 0
 
