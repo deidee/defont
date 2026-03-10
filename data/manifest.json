@@ -1,6 +1,6 @@
 {
   "manifestVersion": 2,
-  "generatedAt": "2026-03-10T16:40:33.769954+00:00",
+  "generatedAt": "2026-03-10T20:25:19.025590+00:00",
   "name": "defont",
   "metadata": {
     "family": "defont",
@@ -8,29 +8,29 @@
     "fullName": "defont Regular",
     "postScriptName": "defont-Regular",
     "unitsPerEm": 1000,
-    "glyphCount": 3025
+    "glyphCount": 3107
   },
   "files": [
     {
       "ext": "woff2",
       "file": "defont.woff2",
       "recommendedFile": "defont.woff2",
-      "bytes": 29484,
-      "sha256": "3c17631c070ca9f1d232f473cdf4e6e559c72474d6298276ecdc243a85641836"
+      "bytes": 30320,
+      "sha256": "6c0fa470b6eefaee1787f8ce572387438a3561a7809709e0f93e2d25818ec0cd"
     },
     {
       "ext": "woff",
       "file": "defont.woff",
       "recommendedFile": "defont.woff",
-      "bytes": 53020,
-      "sha256": "da7de6a9d0d6119d7c120c6004dffcef0d9fda84c8a39d787cac054c2c98e84b"
+      "bytes": 54452,
+      "sha256": "890a7199a1202b1bc96c69f47a76793041fc6d180dad21db6749c6c804d4104a"
     },
     {
       "ext": "ttf",
       "file": "defont.ttf",
       "recommendedFile": "defont.ttf",
-      "bytes": 147572,
-      "sha256": "b5e67d36b5991de849b67787cc3a1c2ee8288cd90f725ee16665b7d4c9bb2658"
+      "bytes": 151588,
+      "sha256": "dda534c23fb89a5a52365903e3236fcedece1c779d3306e4e945c0ffcecc64b4"
     }
   ],
   "unicodeRanges": [
@@ -55,8 +55,16 @@
       177
     ],
     [
+      198,
+      198
+    ],
+    [
       228,
       228
+    ],
+    [
+      230,
+      230
     ],
     [
       235,
@@ -77,6 +85,10 @@
     [
       305,
       305
+    ],
+    [
+      338,
+      339
     ],
     [
       932,
@@ -212,8 +224,8 @@
     ]
   ],
   "counts": {
-    "codepointsTotal": 232,
-    "codepointsBMP": 232,
+    "codepointsTotal": 236,
+    "codepointsBMP": 236,
     "codepointsAstral": 0
   },
   "features": {

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="216" viewBox="0 0 5 9" shape-rendering="crispEdges">
+  <title>U+00E6 (æ)</title>
+  
+  <g>
+    <rect x="0" y="2" width="1" height="1" fill="rgb(86,147,56)" fill-opacity="0.500"/>
+    <rect x="1" y="2" width="1" height="1" fill="rgb(99,183,111)" fill-opacity="0.500"/>
+    <rect x="2" y="2" width="1" height="1" fill="rgb(108,247,148)" fill-opacity="0.500"/>
+    <rect x="3" y="2" width="1" height="1" fill="rgb(86,150,8)" fill-opacity="0.500"/>
+    <rect x="4" y="2" width="1" height="1" fill="rgb(106,153,169)" fill-opacity="0.500"/>
+    <rect x="2" y="3" width="1" height="1" fill="rgb(123,181,37)" fill-opacity="0.500"/>
+    <rect x="4" y="3" width="1" height="1" fill="rgb(12,142,36)" fill-opacity="0.500"/>
+    <rect x="0" y="4" width="1" height="1" fill="rgb(54,187,46)" fill-opacity="0.500"/>
+    <rect x="1" y="4" width="1" height="1" fill="rgb(25,172,116)" fill-opacity="0.500"/>
+    <rect x="2" y="4" width="1" height="1" fill="rgb(86,235,158)" fill-opacity="0.500"/>
+    <rect x="3" y="4" width="1" height="1" fill="rgb(56,205,53)" fill-opacity="0.500"/>
+    <rect x="4" y="4" width="1" height="1" fill="rgb(62,177,160)" fill-opacity="0.500"/>
+    <rect x="0" y="5" width="1" height="1" fill="rgb(118,161,182)" fill-opacity="0.500"/>
+    <rect x="2" y="5" width="1" height="1" fill="rgb(32,187,18)" fill-opacity="0.500"/>
+    <rect x="0" y="6" width="1" height="1" fill="rgb(53,194,111)" fill-opacity="0.500"/>
+    <rect x="1" y="6" width="1" height="1" fill="rgb(99,199,167)" fill-opacity="0.500"/>
+    <rect x="2" y="6" width="1" height="1" fill="rgb(11,176,26)" fill-opacity="0.500"/>
+    <rect x="3" y="6" width="1" height="1" fill="rgb(5,130,156)" fill-opacity="0.500"/>
+    <rect x="4" y="6" width="1" height="1" fill="rgb(78,227,62)" fill-opacity="0.500"/>
+  </g>
+</svg>
