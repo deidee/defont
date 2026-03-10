@@ -3,13 +3,13 @@
   <title>U+2213 (∓)</title>
   
   <g>
-    <rect x="0" y="2" width="1" height="1" fill="rgb(99,196,26)" fill-opacity="0.500"/>
-    <rect x="1" y="2" width="1" height="1" fill="rgb(106,133,51)" fill-opacity="0.500"/>
-    <rect x="2" y="2" width="1" height="1" fill="rgb(124,207,171)" fill-opacity="0.500"/>
-    <rect x="1" y="4" width="1" height="1" fill="rgb(53,233,158)" fill-opacity="0.500"/>
-    <rect x="0" y="5" width="1" height="1" fill="rgb(55,164,111)" fill-opacity="0.500"/>
-    <rect x="1" y="5" width="1" height="1" fill="rgb(61,148,64)" fill-opacity="0.500"/>
-    <rect x="2" y="5" width="1" height="1" fill="rgb(38,221,38)" fill-opacity="0.500"/>
-    <rect x="1" y="6" width="1" height="1" fill="rgb(46,248,189)" fill-opacity="0.500"/>
+    <rect x="0" y="2" width="1" height="1" fill="rgb(85,208,179)" fill-opacity="0.500"/>
+    <rect x="1" y="2" width="1" height="1" fill="rgb(80,135,107)" fill-opacity="0.500"/>
+    <rect x="2" y="2" width="1" height="1" fill="rgb(122,225,9)" fill-opacity="0.500"/>
+    <rect x="1" y="4" width="1" height="1" fill="rgb(106,139,2)" fill-opacity="0.500"/>
+    <rect x="0" y="5" width="1" height="1" fill="rgb(56,225,177)" fill-opacity="0.500"/>
+    <rect x="1" y="5" width="1" height="1" fill="rgb(88,192,8)" fill-opacity="0.500"/>
+    <rect x="2" y="5" width="1" height="1" fill="rgb(86,228,8)" fill-opacity="0.500"/>
+    <rect x="1" y="6" width="1" height="1" fill="rgb(50,237,117)" fill-opacity="0.500"/>
   </g>
 </svg>

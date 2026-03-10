@@ -3,8 +3,8 @@
   <title>U+002D (-)</title>
   
   <g>
-    <rect x="0" y="5" width="1" height="1" fill="rgb(9,151,46)" fill-opacity="0.500"/>
-    <rect x="1" y="5" width="1" height="1" fill="rgb(113,158,71)" fill-opacity="0.500"/>
-    <rect x="2" y="5" width="1" height="1" fill="rgb(119,206,106)" fill-opacity="0.500"/>
+    <rect x="0" y="5" width="1" height="1" fill="rgb(18,150,122)" fill-opacity="0.500"/>
+    <rect x="1" y="5" width="1" height="1" fill="rgb(18,203,170)" fill-opacity="0.500"/>
+    <rect x="2" y="5" width="1" height="1" fill="rgb(100,235,11)" fill-opacity="0.500"/>
   </g>
 </svg>
