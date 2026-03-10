@@ -5,10 +5,10 @@ from __future__ import annotations
 CHARS_DATA = {
   "format": "deidee-chars",
   "version": 1,
-  "generated_at": "2026-03-10T16:34:15.320250+00:00",
+  "generated_at": "2026-03-10T16:40:22.259881+00:00",
   "source": "C:/xampp/htdocs/deidee/defont/data/chars.php",
   "meta": {
-    "glyph_count": 233,
+    "glyph_count": 234,
     "keys_in_order": [
       ".notdef",
       "32",
@@ -107,6 +107,7 @@ CHARS_DATA = {
       "167",
       "169",
       "177",
+      "228",
       "235",
       "239",
       "246",
@@ -9207,6 +9208,98 @@ CHARS_DATA = {
       "char": "±",
       "is_ligature": false
     },
+    "228": {
+      "key": 228,
+      "width": 3,
+      "height": 9,
+      "data": [
+        1,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1,
+        1,
+        1,
+        0,
+        0,
+        1,
+        1,
+        1,
+        1,
+        1,
+        0,
+        1,
+        1,
+        1,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        [
+          1,
+          0,
+          1
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          1,
+          1,
+          1
+        ],
+        [
+          0,
+          0,
+          1
+        ],
+        [
+          1,
+          1,
+          1
+        ],
+        [
+          1,
+          0,
+          1
+        ],
+        [
+          1,
+          1,
+          1
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ]
+      ],
+      "active_pixels": 14,
+      "bbox": {
+        "x": 0,
+        "y": 0,
+        "width": 3,
+        "height": 7
+      },
+      "codepoint": 228,
+      "unicode": "U+00E4",
+      "char": "ä",
+      "is_ligature": false
+    },
     "235": {
       "key": 235,
       "width": 3,
@@ -9225,11 +9318,11 @@ CHARS_DATA = {
         0,
         1,
         1,
+        1,
+        1,
+        1,
         0,
-        1,
-        1,
         0,
-        1,
         1,
         1,
         1,
@@ -9263,13 +9356,13 @@ CHARS_DATA = {
         ],
         [
           1,
-          0,
+          1,
           1
         ],
         [
           1,
           0,
-          1
+          0
         ],
         [
           1,
