@@ -4,10 +4,10 @@
 export const charsData = {
   "format": "deidee-chars",
   "version": 1,
-  "generated_at": "2026-03-10T15:36:52.225838+00:00",
+  "generated_at": "2026-03-10T16:34:15.320250+00:00",
   "source": "C:/xampp/htdocs/deidee/defont/data/chars.php",
   "meta": {
-    "glyph_count": 232,
+    "glyph_count": 233,
     "keys_in_order": [
       ".notdef",
       "32",
@@ -113,6 +113,7 @@ export const charsData = {
       "252",
       "305",
       "932",
+      "960",
       "1025",
       "1026",
       "1040",
@@ -9847,6 +9848,134 @@ export const charsData = {
       "codepoint": 932,
       "unicode": "U+03A4",
       "char": "Τ",
+      "is_ligature": false
+    },
+    "960": {
+      "key": 960,
+      "width": 5,
+      "height": 9,
+      "data": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        1,
+        1,
+        1,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        0,
+        1,
+        0,
+        1,
+        0,
+        0,
+        1,
+        0,
+        1,
+        0,
+        0,
+        1,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        [
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        [
+          0,
+          1,
+          0,
+          1,
+          0
+        ],
+        [
+          0,
+          1,
+          0,
+          1,
+          0
+        ],
+        [
+          0,
+          1,
+          0,
+          1,
+          0
+        ],
+        [
+          0,
+          1,
+          0,
+          1,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      ],
+      "active_pixels": 13,
+      "bbox": {
+        "x": 0,
+        "y": 2,
+        "width": 5,
+        "height": 5
+      },
+      "codepoint": 960,
+      "unicode": "U+03C0",
+      "char": "π",
       "is_ligature": false
     },
     "1025": {
