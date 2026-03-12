@@ -7,6 +7,7 @@ Parse glyph data from data/chars.php and export it to:
 - data/chars.json   (canonical, easy to consume from Python + JS)
 - data/chars.py     (optional Python module)
 - data/chars.mjs    (optional JS module)
+- config/defont.php (runtime-friendly CakePHP config export)
 
 Ligatures:
 - Any *string key* (except ".notdef") with len(key) > 1 is treated as a ligature.
@@ -213,6 +214,196 @@ def parse_php_chars(php_text: str) -> OrderedDict[str | int, dict[str, Any]]:
     return glyphs
 
 
+def _is_printable_char(ch: str) -> bool:
+    return ch.isprintable() and ch not in {"\n", "\r", "\t", "\x0b", "\x0c"}
+
+
+def _runtime_char_entry(key: str | int) -> tuple[str, int, str] | None:
+    """
+    Return (char, codepoint, key_string) for runtime-usable single-character glyphs.
+    Supports:
+    - int keys like 0x41
+    - single-character string keys
+    Excludes ligatures and .notdef.
+    """
+    if isinstance(key, int):
+        try:
+            ch = chr(key)
+        except ValueError:
+            return None
+        if not _is_printable_char(ch):
+            return None
+        return ch, key, str(key)
+
+    if key == ".notdef":
+        return None
+
+    if len(key) == 1 and _is_printable_char(key):
+        return key, ord(key), key
+
+    return None
+
+
+def _group_runtime_chars(glyphs: OrderedDict[str | int, dict[str, Any]]) -> dict[str, Any]:
+    entries: list[tuple[str, int, str]] = []
+
+    for key in glyphs.keys():
+        item = _runtime_char_entry(key)
+        if item is not None:
+            entries.append(item)
+
+    # Stable and readable ordering by codepoint
+    entries.sort(key=lambda t: t[1])
+
+    upper: list[str] = []
+    lower: list[str] = []
+    digits: list[str] = []
+    punct: list[str] = []
+    other: list[str] = []
+
+    codepoints: list[int] = []
+    char_to_key: dict[str, str] = {}
+    char_to_unicode: dict[str, str] = {}
+
+    for ch, cp, key_str in entries:
+        codepoints.append(cp)
+        char_to_key[ch] = key_str
+        char_to_unicode[ch] = f"U+{cp:04X}"
+
+        if "A" <= ch <= "Z":
+            upper.append(ch)
+        elif "a" <= ch <= "z":
+            lower.append(ch)
+        elif "0" <= ch <= "9":
+            digits.append(ch)
+        elif ch.isprintable() and not ch.isalnum() and not ch.isspace():
+            punct.append(ch)
+        else:
+            other.append(ch)
+
+    all_chars = upper + lower + digits + punct + other
+
+    return {
+        "all": "".join(all_chars),
+        "uppercase": "".join(upper),
+        "lowercase": "".join(lower),
+        "digits": "".join(digits),
+        "punct": "".join(punct),
+        "other": "".join(other),
+        "codepoints": codepoints,
+        "char_to_key": char_to_key,
+        "char_to_unicode": char_to_unicode,
+    }
+
+
+def _codepoints_to_ranges(codepoints: list[int]) -> list[list[int]]:
+    if not codepoints:
+        return []
+
+    cps = sorted(set(codepoints))
+    ranges: list[list[int]] = []
+
+    start = prev = cps[0]
+    for cp in cps[1:]:
+        if cp == prev + 1:
+            prev = cp
+            continue
+        ranges.append([start, prev])
+        start = prev = cp
+
+    ranges.append([start, prev])
+    return ranges
+
+
+def _php_scalar(value: Any, indent: int = 0) -> str:
+    pad = " " * indent
+    next_pad = " " * (indent + 4)
+
+    if value is None:
+        return "null"
+    if value is True:
+        return "true"
+    if value is False:
+        return "false"
+    if isinstance(value, int):
+        return str(value)
+    if isinstance(value, float):
+        return repr(value)
+    if isinstance(value, str):
+        escaped = (
+            value.replace("\\", "\\\\")
+            .replace("'", "\\'")
+            .replace("\r", "\\r")
+            .replace("\n", "\\n")
+            .replace("\t", "\\t")
+        )
+        return f"'{escaped}'"
+
+    if isinstance(value, list):
+        if not value:
+            return "[]"
+        lines = ["["]
+        for item in value:
+            lines.append(f"{next_pad}{_php_scalar(item, indent + 4)},")
+        lines.append(f"{pad}]")
+        return "\n".join(lines)
+
+    if isinstance(value, dict):
+        if not value:
+            return "[]"
+        lines = ["["]
+        for k, v in value.items():
+            lines.append(f"{next_pad}{_php_scalar(str(k))} => {_php_scalar(v, indent + 4)},")
+        lines.append(f"{pad}]")
+        return "\n".join(lines)
+
+    raise TypeError(f"Unsupported value for PHP export: {type(value)!r}")
+
+
+def build_cake_config_payload(glyphs: OrderedDict[str | int, dict[str, Any]]) -> dict[str, Any]:
+    runtime = _group_runtime_chars(glyphs)
+    codepoints = runtime["codepoints"]
+    unicode_ranges = _codepoints_to_ranges(codepoints)
+
+    ligatures: OrderedDict[str, dict[str, Any]] = OrderedDict()
+    named_glyph_keys: list[str] = []
+
+    for key, glyph in glyphs.items():
+        if isinstance(key, str):
+            if glyph.get("is_ligature") is True:
+                ligatures[key] = {
+                    "sequence": key,
+                    "chars": glyph.get("sequence_chars") or [],
+                    "codepoints": glyph.get("sequence_codepoints") or [],
+                    "unicode": glyph.get("sequence_unicode") or [],
+                }
+            elif key != ".notdef":
+                named_glyph_keys.append(key)
+
+    return {
+        "Defont": {
+            "glyphCount": len(glyphs),
+            "chars": runtime["all"],
+            "uppercase": runtime["uppercase"],
+            "lowercase": runtime["lowercase"],
+            "digits": runtime["digits"],
+            "punct": runtime["punct"],
+            "other": runtime["other"],
+            "codepoints": codepoints,
+            "unicodeRanges": unicode_ranges,
+            "charToKey": runtime["char_to_key"],
+            "charToUnicode": runtime["char_to_unicode"],
+            "ligatureKeys": list(ligatures.keys()),
+            "ligatures": ligatures,
+            "namedGlyphKeys": named_glyph_keys,
+            "hasUppercase": bool(runtime["uppercase"]),
+            "hasLowercase": bool(runtime["lowercase"]),
+            "hasDigits": bool(runtime["digits"]),
+            "hasPunct": bool(runtime["punct"]),
+        }
+    }
+
+
 def build_payload(glyphs: OrderedDict[str | int, dict[str, Any]], source_path: Path) -> dict[str, Any]:
     glyphs_by_key: OrderedDict[str, dict[str, Any]] = OrderedDict()
     keys_in_order: list[str] = []
@@ -284,11 +475,26 @@ def write_js_module(payload: dict[str, Any], out_path: Path) -> None:
     out_path.write_text(content, encoding="utf-8")
 
 
+def write_cake_config(payload: dict[str, Any], out_path: Path) -> None:
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+
+    content = (
+        "<?php\n"
+        "declare(strict_types=1);\n\n"
+        "// Auto-generated by tools/generate-data.py\n"
+        "// Runtime-friendly config for CakePHP/plugin usage.\n\n"
+        "return "
+        + _php_scalar(payload, 0)
+        + ";\n"
+    )
+    out_path.write_text(content, encoding="utf-8")
+
+
 def main() -> int:
     root = Path(__file__).resolve().parents[1]
 
     parser = argparse.ArgumentParser(
-        description="Parse data/chars.php and export glyph data to JSON/Python/JS."
+        description="Parse data/chars.php and export glyph data to JSON/Python/JS/CakePHP config."
     )
     parser.add_argument(
         "--input",
@@ -315,9 +521,20 @@ def main() -> int:
         help="Output JavaScript module path (default: %(default)s)",
     )
     parser.add_argument(
+        "--cake-config-out",
+        type=Path,
+        default=root / "config" / "defont.php",
+        help="Output CakePHP config path (default: %(default)s)",
+    )
+    parser.add_argument(
         "--json-only",
         action="store_true",
         help="Only write JSON (skip .py and .mjs exports)",
+    )
+    parser.add_argument(
+        "--no-cake-config",
+        action="store_true",
+        help="Do not write CakePHP config export",
     )
     args = parser.parse_args()
 
@@ -330,11 +547,17 @@ def main() -> int:
         write_python_module(payload, args.py_out)
         write_js_module(payload, args.js_out)
 
+    if not args.no_cake_config:
+        cake_payload = build_cake_config_payload(glyphs)
+        write_cake_config(cake_payload, args.cake_config_out)
+
     print(f"Parsed {len(glyphs)} glyphs from {args.input}")
     print(f"Wrote {args.json_out}")
     if not args.json_only:
         print(f"Wrote {args.py_out}")
         print(f"Wrote {args.js_out}")
+    if not args.no_cake_config:
+        print(f"Wrote {args.cake_config_out}")
 
     ligs = payload["meta"]["ligature_keys"]
     if ligs:

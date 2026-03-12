@@ -5,7 +5,7 @@ from __future__ import annotations
 CHARS_DATA = {
   "format": "deidee-chars",
   "version": 1,
-  "generated_at": "2026-03-10T20:24:13.837865+00:00",
+  "generated_at": "2026-03-12T16:01:07.006199+00:00",
   "source": "C:/xampp/htdocs/deidee/defont/data/chars.php",
   "meta": {
     "glyph_count": 238,
